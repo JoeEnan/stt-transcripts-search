@@ -12,7 +12,6 @@ from fastapi import (
 )
 from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import JSONResponse
-
 from routes.websocket import transcribe_audio_task
 
 router = APIRouter(prefix="/api", tags=["transcriptions"])
@@ -23,24 +22,34 @@ os.makedirs(AUDIO_STORAGE_PATH, exist_ok=True)
 
 @router.post("/transcribe")
 async def transcribe(
-    background_tasks: BackgroundTasks, file: UploadFile = File(...)
+    background_tasks: BackgroundTasks, files: list[UploadFile] = File(...)
 ) -> JSONResponse:
-    if not file.filename.endswith((".wav", ".mp3", ".m4a")):
+    if not all(file.filename.endswith((".wav", ".mp3", ".m4a")) for file in files):
         raise HTTPException(status_code=400, detail="Unsupported file format")
 
-    unique_filename = f"{uuid.uuid4()}_{file.filename}"
-    audio_path = os.path.join(AUDIO_STORAGE_PATH, unique_filename)
-    with open(audio_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
+    # Generate a unique UUID for this batch
+    batch_uuid = str(uuid.uuid4())
+
+    audio_paths = []
+    for file in files:
+        unique_filename = f"{batch_uuid}_{file.filename}"
+        audio_path = os.path.join(AUDIO_STORAGE_PATH, unique_filename)
+        audio_paths.append(audio_path)
+        with open(audio_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
 
     # Start transcription task
     background_tasks.add_task(
         run_in_threadpool,
-        lambda: asyncio.run(transcribe_audio_task(audio_path, file.filename)),
+        lambda: asyncio.run(transcribe_audio_task(batch_uuid, audio_paths)),
     )
 
     return JSONResponse(
-        content={"message": "File uploaded, transcription started."}, status_code=202
+        content={
+            "message": "Files uploaded, transcription started.",
+            "batch_uuid": batch_uuid,
+        },
+        status_code=202,
     )
 
 
