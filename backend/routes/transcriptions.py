@@ -9,59 +9,16 @@ from fastapi import (
     File,
     HTTPException,
     UploadFile,
-    WebSocket,
-    WebSocketDisconnect,
 )
 from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import JSONResponse
-from utils.transcriber import save_transcription, transcribe_audio
+
+from routes.websocket import transcribe_audio_task
 
 router = APIRouter(prefix="/api", tags=["transcriptions"])
 
 AUDIO_STORAGE_PATH = "backend/audio_storage"
 os.makedirs(AUDIO_STORAGE_PATH, exist_ok=True)
-
-connected_websockets = set()
-
-
-@router.websocket("/ws")
-async def websocket_endpoint(websocket: WebSocket):
-    await websocket.accept()
-    connected_websockets.add(websocket)
-    try:
-        while True:
-            message = await websocket.receive_text()
-            await websocket.send_json(
-                {"status": "message_received", "message": message}
-            )
-    except WebSocketDisconnect:
-        print("WebSocket disconnected")
-    except Exception as e:
-        print(f"Error in WebSocket: {e}")
-    finally:
-        connected_websockets.remove(websocket)
-        try:
-            await websocket.close()
-        except RuntimeError:
-            print("WebSocket already closed.")
-
-
-async def transcribe_audio_task(file_path: str, original_audio_filename: str):
-    # This will run asynchronously as needed by Whisper
-    transcribed_text = transcribe_audio(file_path)
-    save_transcription(file_path, original_audio_filename, transcribed_text)
-    # Notify all connected WebSocket clients that transcription is done
-    for websocket in connected_websockets:
-        try:
-            await websocket.send_json(
-                {
-                    "status": "completed",
-                    "file": os.path.basename(file_path),
-                    "text": transcribed_text,
-                }
-            )
-        except Exception as e:
-            print(f"Failed to send message over WebSocket: {e}")
 
 
 @router.post("/transcribe")
