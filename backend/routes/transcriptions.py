@@ -78,7 +78,8 @@ async def transcribe(
 
     # Start transcription task
     background_tasks.add_task(
-        run_in_threadpool, lambda: asyncio.run(transcribe_audio_task(audio_path, file.filename))
+        run_in_threadpool,
+        lambda: asyncio.run(transcribe_audio_task(audio_path, file.filename)),
     )
 
     return JSONResponse(

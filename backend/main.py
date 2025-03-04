@@ -1,8 +1,8 @@
 from contextlib import asynccontextmanager
 
+from database import init_db
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from database import init_db
 from routes import health, transcriptions
 
 app = FastAPI()
@@ -18,7 +18,7 @@ app.add_middleware(
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    print("Initializing database")
+    print("Ensuring database exists")
     init_db()
 
     yield
