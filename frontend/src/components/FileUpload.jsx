@@ -13,7 +13,6 @@ const FileUpload = () => {
             console.warn("No files selected for upload.");
             return; // Exit the function if no files are selected
         }
-
         const formData = new FormData();
         files.forEach(file => {
             formData.append('files', file);
@@ -24,12 +23,10 @@ const FileUpload = () => {
             body: formData,
         });
 
-        // Handle the response and check if transcription has started
+        // Handle the response
         if (response.ok) {
             const data = await response.json();
             console.log("Files uploaded, transcription started:", data);
-
-            // Handle WebSocket connection if a batch UUID is returned
             if (data.batch_uuid) {
                 listenForTranscriptionUpdates(data.batch_uuid);
             }
@@ -39,18 +36,15 @@ const FileUpload = () => {
         }
 
         // Clear the files after upload attempt
-        setFiles([]); // Clear the file input after upload
-        // Optionally clear the file input element in the UI
+        setFiles([]);
         document.querySelector('input[type="file"]').value = null; // Reset the file input
     };
 
     const listenForTranscriptionUpdates = (batch_uuid) => {
         const ws = new WebSocket(`ws://localhost:9090/ws/transcript_ready/${batch_uuid}`);
-
         ws.onopen = () => {
             console.log("Connected to WebSocket for transcription updates.");
         };
-
         ws.onmessage = (event) => {
             const message = JSON.parse(event.data);
             console.log("Received from websocket:", message);
@@ -59,16 +53,15 @@ const FileUpload = () => {
                 console.log("Batch processing is complete.");
                 ws.close();  // Close the WebSocket connection
             }
-            if (message.status === "job_completed") {
+            // Else, its a single audio file job that is completed
+            else if (message.status === "job_completed") {
                 console.log("Audio file processing is complete.");
                 ws.close();  // Close the WebSocket connection
             }
         };
-
         ws.onerror = (error) => {
             console.error("WebSocket error:", error);
         };
-
         ws.onclose = () => {
             console.log("WebSocket connection closed.");
         };
@@ -81,8 +74,18 @@ const FileUpload = () => {
                 type="file"
                 multiple
                 onChange={handleFiles}
-                className="border border-gray-600 rounded p-2 w-full mb-2"
+                className="hidden" // Hide the original input
             />
+            <label className="border border-gray-600 rounded p-2 w-full mb-2 flex justify-between items-center cursor-pointer"
+                onClick={() => document.querySelector('input[type="file"]').click()}>
+                <span>{files.length ? `${files.length} file(s) selected` : 'Choose files'}</span>
+                <span className="text-gray-500">{files.length ? '✓' : ''}</span>
+            </label>
+            <ul className="list-disc pl-5 mb-2 text-white">
+                {Array.from(files).map((file, index) => (
+                    <li key={index}>{file.name}</li>
+                ))}
+            </ul>
             <button
                 onClick={uploadFiles}
                 className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors"
