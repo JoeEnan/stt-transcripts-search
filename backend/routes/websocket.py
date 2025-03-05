@@ -72,4 +72,18 @@ async def transcribe_audio_task(
                     }
                 )
             except Exception as e:
-                print(f"Failed to send final completion message over WebSocket: {e}")
+                print(
+                    f"Failed to send final completion message for batch job over WebSocket: {e}"
+                )
+    else:
+        try:
+            await websocket.send_json(
+                {
+                    "status": "job_completed",
+                    "results": results,
+                }
+            )
+        except Exception as e:
+            print(
+                f"Failed to send final completion message for single job over WebSocket: {e}"
+            )
