@@ -2,8 +2,9 @@ import asyncio
 import os
 import shutil
 import uuid
+from typing import Annotated
 
-from database import SessionLocal, Transcription
+import aiofiles
 from fastapi import (
     APIRouter,
     BackgroundTasks,
@@ -13,17 +14,18 @@ from fastapi import (
 )
 from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import JSONResponse
+
+from database import SessionLocal, Transcription
 from routes.websocket import transcribe_audio_task
 
 router = APIRouter(prefix="/api", tags=["transcriptions"])
 
 AUDIO_STORAGE_PATH = "audio_storage"
-os.makedirs(AUDIO_STORAGE_PATH, exist_ok=True)
 
 
 @router.post("/transcribe")
 async def transcribe(
-    background_tasks: BackgroundTasks, files: list[UploadFile] = File(...)
+    background_tasks: BackgroundTasks, files: Annotated[list[UploadFile], File()] = ...
 ) -> JSONResponse:
     if not all(file.filename.endswith((".wav", ".mp3", ".m4a")) for file in files):
         raise HTTPException(status_code=400, detail="Unsupported file format")
@@ -38,8 +40,8 @@ async def transcribe(
         audio_path = os.path.join(AUDIO_STORAGE_PATH, unique_filename)
         audio_paths.append(audio_path)
         original_audio_names.append(file.filename)
-        with open(audio_path, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
+        async with aiofiles.open(audio_path, "wb") as buffer:
+            await buffer.write(await file.read())
 
     # Start transcription task
     background_tasks.add_task(

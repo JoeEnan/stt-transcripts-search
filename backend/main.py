@@ -1,9 +1,10 @@
 from contextlib import asynccontextmanager
 
-from database import init_db
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+
+from database import init_db
 from routes import health, transcriptions, websocket
 
 app = FastAPI()

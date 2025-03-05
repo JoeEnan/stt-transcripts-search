@@ -1,4 +1,5 @@
 import whisper
+
 from database import SessionLocal, Transcription
 
 model = whisper.load_model("tiny")
