@@ -3,6 +3,7 @@ import os
 import shutil
 import uuid
 
+from database import SessionLocal, Transcription
 from fastapi import (
     APIRouter,
     BackgroundTasks,
@@ -13,7 +14,6 @@ from fastapi import (
 from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import JSONResponse
 from routes.websocket import transcribe_audio_task
-from database import SessionLocal, Transcription
 
 router = APIRouter(prefix="/api", tags=["transcriptions"])
 
@@ -63,13 +63,16 @@ async def get_transcriptions():
     with SessionLocal() as session:
         transcriptions = session.query(Transcription).all()
         return JSONResponse(
-            content=[{
-                "id": transcription.id,
-                "audio_filepath": transcription.audio_filepath,
-                "original_audio_filename": transcription.original_audio_filename,
-                "text": transcription.text,
-                "created_at": transcription.created_at.isoformat(),
-            } for transcription in transcriptions],
+            content=[
+                {
+                    "id": transcription.id,
+                    "audio_filepath": transcription.audio_filepath,
+                    "original_audio_filename": transcription.original_audio_filename,
+                    "text": transcription.text,
+                    "created_at": transcription.created_at.isoformat(),
+                }
+                for transcription in transcriptions
+            ],
             status_code=200,
         )
 
