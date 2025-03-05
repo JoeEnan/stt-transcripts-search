@@ -31,17 +31,21 @@ async def transcribe(
     batch_uuid = str(uuid.uuid4())
 
     audio_paths = []
+    original_audio_names = []
     for file in files:
         unique_filename = f"{batch_uuid}_{file.filename}"
         audio_path = os.path.join(AUDIO_STORAGE_PATH, unique_filename)
         audio_paths.append(audio_path)
+        original_audio_names.append(file.filename)
         with open(audio_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
 
     # Start transcription task
     background_tasks.add_task(
         run_in_threadpool,
-        lambda: asyncio.run(transcribe_audio_task(batch_uuid, audio_paths)),
+        lambda: asyncio.run(
+            transcribe_audio_task(batch_uuid, audio_paths, original_audio_names)
+        ),
     )
 
     return JSONResponse(

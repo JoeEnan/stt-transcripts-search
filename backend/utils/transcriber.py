@@ -11,11 +11,11 @@ def transcribe_audio(file_path: str) -> str:
 
 
 def save_transcription(
-    file_path: str, original_audio_filename: str, transcribed_text: str
+    audio_filepath: str, original_audio_filename: str, transcribed_text: str
 ) -> None:
     with SessionLocal() as session:
         transcription = Transcription(
-            audio_filename=file_path,
+            audio_filepath=audio_filepath,
             original_audio_filename=original_audio_filename,
             text=transcribed_text,
         )

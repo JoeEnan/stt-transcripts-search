@@ -14,7 +14,7 @@ Base = declarative_base()
 class Transcription(Base):
     __tablename__ = "transcriptions"
     id = Column(Integer, primary_key=True, index=True)
-    audio_filename = Column(String, index=True)
+    audio_filepath = Column(String, index=True)
     original_audio_filename = Column(String, index=True)
     text = Column(Text)
     created_at = Column(DateTime, default=datetime.now(UTC))
