@@ -34,4 +34,4 @@ app.include_router(websocket.router)
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run("main:app", host="0.0.0.0", port=9090, reload=False)
+    uvicorn.run("main:app", host="0.0.0.0", port=9090, reload=True)
