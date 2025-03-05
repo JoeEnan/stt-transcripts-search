@@ -19,6 +19,7 @@ const TranscriptionList = () => {
 
     return (
         <div className="mt-8 w-full max-w-3xl p-4 bg-gray-800 rounded-xl shadow-md">
+            <h2 className="text-3xl font-bold mb-2 text-left">Past Transcriptions</h2>
             <input
                 type="text"
                 placeholder="Search by audio file name"
