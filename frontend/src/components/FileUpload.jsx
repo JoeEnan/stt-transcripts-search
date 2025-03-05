@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
+import Notification from './Notification';
 
 const FileUpload = () => {
     const [files, setFiles] = useState([]);
+    const [notifications, setNotifications] = useState([]);
 
     const handleFiles = (e) => {
         setFiles([...e.target.files]);
@@ -10,8 +12,8 @@ const FileUpload = () => {
     const uploadFiles = async () => {
         // Check if any files have been selected
         if (files.length === 0) {
-            console.warn("No files selected for upload.");
-            return; // Exit the function if no files are selected
+            displayNotification('Error', 'Please select files for upload!', 'error', "");
+            return;
         }
         const formData = new FormData();
         files.forEach(file => {
@@ -26,18 +28,17 @@ const FileUpload = () => {
         // Handle the response
         if (response.ok) {
             const data = await response.json();
-            console.log("Files uploaded, transcription started:", data);
+            displayNotification('Success', 'Files Uploaded!', 'success', 'All files');
             if (data.batch_uuid) {
                 listenForTranscriptionUpdates(data.batch_uuid);
             }
         } else {
-            const errorText = await response.text();
-            console.error("Failed to upload files:", errorText);
+            displayNotification('Error', 'Failed to upload files.', 'error', files.map(file => file.name).join(', '));
         }
 
         // Clear the files after upload attempt
         setFiles([]);
-        document.querySelector('input[type="file"]').value = null; // Reset the file input
+        document.querySelector('input[type="file"]').value = null;
     };
 
     const listenForTranscriptionUpdates = (batch_uuid) => {
@@ -47,16 +48,23 @@ const FileUpload = () => {
         };
         ws.onmessage = (event) => {
             const message = JSON.parse(event.data);
-            console.log("Received from websocket:", message);
-            // Check if the batch is completed
-            if (message.status === "batch_completed") {
-                console.log("Batch processing is complete.");
-                ws.close();  // Close the WebSocket connection
-            }
-            // Else, its a single audio file job that is completed
-            else if (message.status === "job_completed") {
-                console.log("Audio file processing is complete.");
-                ws.close();  // Close the WebSocket connection
+            switch (message.status) {
+                case "batch_completed":
+                    displayNotification('Success', 'Batch processing is complete.', 'success', 'All files');
+                    ws.close();
+                    break;
+                case "job_completed":
+                    displayNotification('Success', `Processing complete for all audio files.`, 'success', 'All files');
+                    ws.close();
+                    break;
+                case "completed":
+                    displayNotification('Success', `Processing complete for ${message.file}.`, 'successLight', message.file);
+                    break;
+                case "error":
+                    displayNotification('Warning', `Processing failed for ${message.file}.`, 'warning', message.file);
+                    break;
+                default:
+                    break;
             }
         };
         ws.onerror = (error) => {
@@ -67,8 +75,26 @@ const FileUpload = () => {
         };
     };
 
+    const displayNotification = (title, text, type, affectedFiles) => {
+        setNotifications(prev => [
+            ...prev,
+            { title, text: `File: ${affectedFiles} - ${text}`, type }
+        ]);
+        setTimeout(() => {
+            setNotifications(prev => prev.slice(1)); // Remove oldest notification after a delay
+        }, 5000);
+    };
+
     return (
         <div className="bg-gray-800 p-4 rounded-xl shadow-md w-full max-w-md">
+            {notifications.map((notification, index) => (
+                <Notification
+                    key={index}
+                    message={notification}
+                    type={notification.type}
+                    onClose={() => setNotifications(notifications.filter((_, i) => i !== index))}
+                />
+            ))}
             <h2 className="text-3xl font-bold mb-2 text-left">File Upload</h2>
             <input
                 type="file"
