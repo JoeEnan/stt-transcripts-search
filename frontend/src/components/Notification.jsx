@@ -8,38 +8,49 @@ const Notification = ({ message, type, onClose }) => {
         error: "bg-red-500",
     };
 
-    const [duration] = useState(5000); // Duration of notification in milliseconds
+    const duration = 5000; // Duration of notification in milliseconds
     const [remainingTime, setRemainingTime] = useState(duration);
-    const progressRef = useRef(null);
+    const [paused, setPaused] = useState(false);
+    const intervalRef = useRef(null);
 
     useEffect(() => {
-        const interval = setInterval(() => {
-            setRemainingTime((time) => Math.max(time - 100, 0));
-        }, 100);
-        return () => clearInterval(interval);
-    }, []);
-
-    useEffect(() => {
-        if (remainingTime <= 0) {
-            onClose();
+        if (!paused) {
+            intervalRef.current = setInterval(() => {
+                setRemainingTime((time) => {
+                    if (time <= 100) {
+                        clearInterval(intervalRef.current);
+                        onClose();
+                        return 0;
+                    }
+                    return time - 100;
+                });
+            }, 100);
         }
-    }, [remainingTime, onClose]);
+        return () => {
+            clearInterval(intervalRef.current);
+        };
+    }, [paused, onClose]);
 
     const handleMouseEnter = () => {
-        setRemainingTime(duration); // Reset on hover
+        setPaused(true);
+    };
+
+    const handleMouseLeave = () => {
+        setPaused(false);
     };
 
     const progressPercentage = (remainingTime / duration) * 100;
 
     return (
         <div 
-            className={`rounded-md shadow-lg text-white ${notificationStyles[type]} mb-2`}
+            className={`rounded-md shadow-lg text-white ${notificationStyles[type]} mb-2 relative overflow-hidden`}
             onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
         >
             <button onClick={onClose} className="absolute top-1 right-1 text-l">&times;</button>
             <h4 className="font-bold p-4">{message.title}</h4>
             <p className="pb-4 pr-4 pl-4">{message.text}</p>
-            <div className="relative">
+            <div className="relative h-2">
                 <div className="absolute bottom-0 left-0 h-2 bg-white" style={{ width: `${progressPercentage}%`, transition: 'width 0.1s linear' }}></div>
             </div>
         </div>

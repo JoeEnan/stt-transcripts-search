@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Notification from './Notification';
+import { v4 as uuidv4 } from 'uuid'; // Import uuid
 
 const FileUpload = () => {
     const [files, setFiles] = useState([]);
@@ -10,6 +11,7 @@ const FileUpload = () => {
     };
 
     const uploadFiles = async () => {
+        // Check if any files have been selected
         if (files.length === 0) {
             displayNotification('Error', 'Please select files for upload!', 'error', "");
             return;
@@ -22,6 +24,7 @@ const FileUpload = () => {
             method: 'POST',
             body: formData,
         });
+        // Handle the response
         if (response.ok) {
             const data = await response.json();
             displayNotification('Success', 'Files Uploaded!', 'success', 'All files');
@@ -31,6 +34,7 @@ const FileUpload = () => {
         } else {
             displayNotification('Error', 'Failed to upload files.', 'error', files.map(file => file.name).join(', '));
         }
+        // Clear the files after upload attempt
         setFiles([]);
         document.querySelector('input[type="file"]').value = null;
     };
@@ -70,23 +74,24 @@ const FileUpload = () => {
     };
 
     const displayNotification = (title, text, type, affectedFiles) => {
+        const id = uuidv4(); // Generate a unique ID for the notification
         setNotifications(prev => [
-            { title, text: `File: ${affectedFiles} - ${text}`, type, id: Date.now() },
+            { id, title, text: `File: ${affectedFiles} - ${text}`, type },
             ...prev
         ]);
     };
 
     return (
-        <div className="bg-gray-800 p-4 rounded-xl shadow-md w-full max-w-md">
+        <div className="bg-gray-800 p-4 rounded-xl shadow-md w-full max-w-md relative">
             {/* Notifications Container */}
             <div className="fixed top-4 right-4 flex flex-col space-y-2 z-50">
-                {notifications.map((notification, index) => (
+                {notifications.map((notification) => (
                     <Notification 
-                        key={index} 
+                        key={notification.id} 
                         message={notification} 
                         type={notification.type} 
                         onClose={() => {
-                            setNotifications(notifications.filter((_, i) => i !== index));
+                            setNotifications(prev => prev.filter((n) => n.id !== notification.id));
                         }}
                     />
                 ))}
@@ -96,7 +101,7 @@ const FileUpload = () => {
                 type="file"
                 multiple
                 onChange={handleFiles}
-                className="hidden"
+                className="hidden" // Hide the original input
             />
             <label className="border border-gray-600 rounded p-2 w-full mb-2 flex justify-between items-center cursor-pointer"
                 onClick={() => document.querySelector('input[type="file"]').click()}>
@@ -117,5 +122,4 @@ const FileUpload = () => {
         </div>
     );
 };
-
 export default FileUpload;
