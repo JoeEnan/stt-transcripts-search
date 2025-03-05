@@ -1,4 +1,3 @@
-import os
 from contextlib import asynccontextmanager
 
 from database import init_db
