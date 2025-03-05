@@ -39,12 +39,14 @@ async def websocket_endpoint(websocket: WebSocket, batch_uuid: str):
 async def transcribe_audio_task(
     batch_uuid: str, file_paths: list[str], original_audio_names: list[str]
 ):
+    results = []
     # This will run asynchronously as needed by Whisper
     for file_path, original_audio_name in zip(
         file_paths, original_audio_names, strict=False
     ):
         transcribed_text = transcribe_audio(file_path)
         save_transcription(file_path, original_audio_name, transcribed_text)
+        results.append({"file": original_audio_name})
         # Notify relevant connected WebSocket clients that transcription is done
         for websocket in connected_websockets.get(batch_uuid, set()):
             try:
@@ -57,3 +59,16 @@ async def transcribe_audio_task(
                 )
             except Exception as e:
                 print(f"Failed to send message over WebSocket: {e}")
+
+    # Optionally, you can send a final notification if needed
+    for websocket in connected_websockets.get(batch_uuid, set()):
+        try:
+            await websocket.send_json(
+                {
+                    "status": "batch_completed",
+                    "total_files": len(file_paths),
+                    "results": results,
+                }
+            )
+        except Exception as e:
+            print(f"Failed to send final completion message over WebSocket: {e}")
