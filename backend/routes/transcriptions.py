@@ -17,7 +17,7 @@ from routes.websocket import transcribe_audio_task
 
 router = APIRouter(prefix="/api", tags=["transcriptions"])
 
-AUDIO_STORAGE_PATH = "backend/audio_storage"
+AUDIO_STORAGE_PATH = "audio_storage"
 os.makedirs(AUDIO_STORAGE_PATH, exist_ok=True)
 
 
@@ -66,7 +66,7 @@ async def get_transcriptions():
             content=[
                 {
                     "id": transcription.id,
-                    "audio_filepath": transcription.audio_filepath,
+                    "audio_filepath": f"http://localhost:9090/{transcription.audio_filepath}",  # Add audio file URL
                     "original_audio_filename": transcription.original_audio_filename,
                     "text": transcription.text,
                     "created_at": transcription.created_at.isoformat(),

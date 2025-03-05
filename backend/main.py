@@ -1,8 +1,10 @@
+import os
 from contextlib import asynccontextmanager
 
 from database import init_db
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from routes import health, transcriptions, websocket
 
 app = FastAPI()
@@ -30,6 +32,9 @@ app.router.lifespan_context = lifespan
 app.include_router(health.router)
 app.include_router(transcriptions.router)
 app.include_router(websocket.router)
+
+AUDIO_STORAGE_PATH = "audio_storage"
+app.mount("/audio_storage", StaticFiles(directory=AUDIO_STORAGE_PATH))
 
 if __name__ == "__main__":
     import uvicorn

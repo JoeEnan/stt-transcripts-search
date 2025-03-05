@@ -10,7 +10,7 @@ const FileUpload = () => {
     const uploadFiles = async () => {
         const formData = new FormData();
         files.forEach(file => {
-            formData.append('files', file); // make sure to match with backend code
+            formData.append('files', file);
         });
 
         const response = await fetch('http://localhost:9090/api/transcribe', {
@@ -23,9 +23,19 @@ const FileUpload = () => {
     };
 
     return (
-        <div>
-            <input type="file" multiple onChange={handleFiles} />
-            <button onClick={uploadFiles}>Upload</button>
+        <div className="bg-gray-800 p-4 rounded-xl shadow-md w-full max-w-md">
+            <input
+                type="file"
+                multiple
+                onChange={handleFiles}
+                className="border border-gray-600 rounded p-2 w-full mb-2"
+            />
+            <button
+                onClick={uploadFiles}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors"
+            >
+                Upload
+            </button>
         </div>
     );
 };
