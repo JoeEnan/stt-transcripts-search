@@ -72,11 +72,11 @@ ignore = [
     "E117",
     "E402",   # false positives for local imports
     "E501",   # line too long
-    "ISC001", 
+    "ISC001",
     "ISC002",
-    "Q000", 
-    "Q001", 
-    "Q002", 
+    "Q000",
+    "Q001",
+    "Q002",
     "Q003",
     "TRY003", # external messages in exceptions are too verbose
     "TD002",
@@ -112,8 +112,8 @@ line-ending = "auto"
 [lint.per-file-ignores]
 # Ignore all directories named `tests`.
 "tests/**" = [
-    "INP001", 
-    "S101",     # Asserts 
-    "ERA001",   # Comments
-    "PLR2004",  # Magic Values
+    "INP001",
+    "S101",    # Asserts 
+    "ERA001",  # Comments
+    "PLR2004", # Magic Values
 ]
