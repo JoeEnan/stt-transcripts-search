@@ -60,15 +60,16 @@ async def transcribe_audio_task(
             except Exception as e:
                 print(f"Failed to send message over WebSocket: {e}")
 
-    # Optionally, you can send a final notification if needed
-    for websocket in connected_websockets.get(batch_uuid, set()):
-        try:
-            await websocket.send_json(
-                {
-                    "status": "batch_completed",
-                    "total_files": len(file_paths),
-                    "results": results,
-                }
-            )
-        except Exception as e:
-            print(f"Failed to send final completion message over WebSocket: {e}")
+    # For batch upload, final batch completion message
+    if len(file_paths) > 1:
+        for websocket in connected_websockets.get(batch_uuid, set()):
+            try:
+                await websocket.send_json(
+                    {
+                        "status": "batch_completed",
+                        "total_files": len(file_paths),
+                        "results": results,
+                    }
+                )
+            except Exception as e:
+                print(f"Failed to send final completion message over WebSocket: {e}")
