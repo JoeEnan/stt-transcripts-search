@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Notification from './Notification';
 import { v4 as uuidv4 } from 'uuid'; // Import uuid
+import { motion } from 'framer-motion';
 
 const FileUpload = () => {
     const [files, setFiles] = useState([]);
@@ -84,7 +85,12 @@ const FileUpload = () => {
     return (
         <div className="bg-gray-800 p-4 rounded-xl shadow-md w-full max-w-md relative">
             {/* Notifications Container */}
-            <div className="fixed top-4 right-4 flex flex-col space-y-2 z-50">
+            <motion.div 
+                className="fixed top-4 right-4 flex flex-col space-y-2 z-50"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+            >
                 {notifications.map((notification) => (
                     <Notification 
                         key={notification.id} 
@@ -95,7 +101,7 @@ const FileUpload = () => {
                         }}
                     />
                 ))}
-            </div>
+            </motion.div>
             <h2 className="text-3xl font-bold mb-2 text-left">File Upload</h2>
             <input
                 type="file"
