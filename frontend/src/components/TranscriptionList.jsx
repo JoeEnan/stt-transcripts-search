@@ -4,13 +4,33 @@ const TranscriptionList = () => {
     const [transcriptions, setTranscriptions] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
 
-    useEffect(() => {
-        const fetchTranscriptions = async () => {
+    // Function to fetch transcriptions
+    const fetchTranscriptions = async () => {
+        try {
             const response = await fetch('http://localhost:9090/api/transcriptions');
             const data = await response.json();
             setTranscriptions(data);
-        };
+        } catch (error) {
+            console.error("Error fetching transcriptions:", error);
+        }
+    };
+
+    useEffect(() => {
+        // Fetch on component mount
         fetchTranscriptions();
+
+        // Define an event handler for refreshing transcriptions
+        const handleRefresh = () => {
+            fetchTranscriptions();
+        };
+
+        // Listen for the custom event
+        window.addEventListener('refreshTranscriptions', handleRefresh);
+
+        // Clean up the listener on component unmount
+        return () => {
+            window.removeEventListener('refreshTranscriptions', handleRefresh);
+        };
     }, []);
 
     const filteredTranscriptions = transcriptions.filter(transcription =>

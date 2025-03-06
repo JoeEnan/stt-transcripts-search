@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import Notification from './Notification';
-import { v4 as uuidv4 } from 'uuid'; 
+import { v4 as uuidv4 } from 'uuid';
 import { motion } from 'framer-motion';
 
 const FileUpload = () => {
@@ -67,9 +67,13 @@ const FileUpload = () => {
         switch (message.status) {
             case "batch_completed":
                 displayNotification('Success', 'Batch processing is complete.', 'success', 'All files');
+                // Dispatch an event to refresh transcriptions
+                window.dispatchEvent(new CustomEvent('refreshTranscriptions'));
                 break;
             case "job_completed":
-                displayNotification('Success', `Processing complete for all audio files.`, 'success', 'All files');
+                displayNotification('Success', 'Processing complete for all audio files.', 'success', 'All files');
+                // Dispatch an event to refresh transcriptions
+                window.dispatchEvent(new CustomEvent('refreshTranscriptions'));
                 break;
             case "completed":
                 displayNotification('Success', `Processing complete for ${message.file}.`, 'successLight', message.file);
@@ -93,17 +97,17 @@ const FileUpload = () => {
     return (
         <div className="bg-gray-800 p-4 mt-4 rounded-xl shadow-md w-full max-w-md relative">
             {/* Notifications Container */}
-            <motion.div 
+            <motion.div
                 className="fixed top-4 right-4 flex flex-col space-y-2 z-50"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
             >
                 {notifications.map((notification) => (
-                    <Notification 
-                        key={notification.id} 
-                        message={notification} 
-                        type={notification.type} 
+                    <Notification
+                        key={notification.id}
+                        message={notification}
+                        type={notification.type}
                         onClose={() => {
                             setNotifications(prev => prev.filter((n) => n.id !== notification.id));
                         }}
@@ -128,7 +132,7 @@ const FileUpload = () => {
                 {Array.from(files).map((file, index) => (
                     <li key={index} className="flex justify-between items-center mb-2">
                         <span className="cursor-pointer">{file.name}</span>
-                        <button 
+                        <button
                             onClick={() => removeFile(file.name)}
                             className="bg-red-600 text-white rounded-full px-2 ml-2 hover:bg-red-700" // Added margin (ml-2) for spacing
                         >
