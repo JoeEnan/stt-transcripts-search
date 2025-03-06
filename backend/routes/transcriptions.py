@@ -9,10 +9,12 @@ from fastapi import (
     BackgroundTasks,
     File,
     HTTPException,
+    Query,
     UploadFile,
 )
 from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import JSONResponse
+from sqlalchemy import func
 
 from database import SessionLocal, Transcription
 from routes.websocket import transcribe_audio_task
@@ -79,13 +81,42 @@ async def get_transcriptions():
 
 
 @router.get("/search")
-async def search(file_name: str):
+async def search(
+    file_name: str,
+    match_full_file_name: Annotated[bool, Query(description="Match full file name only")] = False,
+    match_case: Annotated[bool, Query(description="Match case sensitive")] = False,
+):
     with SessionLocal() as session:
-        results = (
-            session.query(Transcription)
-            .filter(Transcription.original_audio_filename.like(f"%{file_name}%"))
-            .all()
-        )
+        # If searching for whole word exact matches:
+        if match_full_file_name:
+            if match_case:
+                # Case sensitive exact match
+                query = session.query(Transcription).filter(
+                    Transcription.original_audio_filename == file_name
+                )
+            else:
+                # Case insensitive exact match using lower()
+                query = session.query(Transcription).filter(
+                    func.lower(Transcription.original_audio_filename)
+                    == file_name.lower()
+                )
+        # Partial match searches (using LIKE)
+        elif match_case:
+            # Case sensitive LIKE search
+            query = session.query(Transcription).filter(
+                Transcription.original_audio_filename.op("GLOB")(f"*{file_name}*")
+            )
+        else:
+            # Case insensitive LIKE search:
+            query = session.query(Transcription).filter(
+                func.lower(Transcription.original_audio_filename).like(
+                    f"%{file_name.lower()}%"
+                )
+            )
+
+        results = query.all()
+
+        # Create JSON response
         return JSONResponse(
             content=[
                 {

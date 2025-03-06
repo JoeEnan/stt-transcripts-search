@@ -87,6 +87,7 @@ ignore = [
     "FIX002", # too verbose descriptions of todos
     "S104",   # bind all interfaces
     "BLE",    # Catch all exceptions
+    "FBT",    # boolean positional fine for API
 ]
 
 # Allow fix for all enabled rules (when `--fix`) is provided.
