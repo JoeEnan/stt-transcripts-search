@@ -67,7 +67,7 @@ async def get_transcriptions():
             content=[
                 {
                     "id": transcription.id,
-                    "audio_filepath": f"http://localhost:9090/{transcription.audio_filepath}",  # Add audio file URL
+                    "audio_filepath": f"http://localhost:9090/{transcription.audio_filepath}",
                     "original_audio_filename": transcription.original_audio_filename,
                     "text": transcription.text,
                     "created_at": transcription.created_at.isoformat(),
@@ -78,7 +78,24 @@ async def get_transcriptions():
         )
 
 
-# @router.get("/search")
-# async def search(file_name: str, db: Session = Depends(get_db)):
-#     results = search_transcriptions(db, file_name)
-#     return results
+@router.get("/search")
+async def search(file_name: str):
+    with SessionLocal() as session:
+        results = (
+            session.query(Transcription)
+            .filter(Transcription.original_audio_filename.like(f"%{file_name}%"))
+            .all()
+        )
+        return JSONResponse(
+            content=[
+                {
+                    "id": transcription.id,
+                    "audio_filepath": f"http://localhost:9090/{transcription.audio_filepath}",
+                    "original_audio_filename": transcription.original_audio_filename,
+                    "text": transcription.text,
+                    "created_at": transcription.created_at.isoformat(),
+                }
+                for transcription in results
+            ],
+            status_code=200,
+        )

@@ -4,7 +4,7 @@ const TranscriptionList = () => {
     const [transcriptions, setTranscriptions] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
 
-    // Function to fetch transcriptions
+    // Function to fetch all transcriptions
     const fetchTranscriptions = async () => {
         try {
             const response = await fetch('http://localhost:9090/api/transcriptions');
@@ -15,27 +15,33 @@ const TranscriptionList = () => {
         }
     };
 
-    useEffect(() => {
-        // Fetch on component mount
-        fetchTranscriptions();
-
-        // Define an event handler for refreshing transcriptions
-        const handleRefresh = () => {
+    // Function to fetch transcriptions based on search term
+    const searchTranscriptions = async (term) => {
+        if (!term) {
+            // If the search term is empty, let's just fetch all transcriptions
             fetchTranscriptions();
-        };
+            return;
+        }
 
-        // Listen for the custom event
-        window.addEventListener('refreshTranscriptions', handleRefresh);
+        try {
+            const response = await fetch(`http://localhost:9090/api/search?file_name=${encodeURIComponent(term)}`);
+            const data = await response.json();
+            setTranscriptions(data);
+        } catch (error) {
+            console.error("Error searching transcriptions:", error);
+        }
+    };
 
-        // Clean up the listener on component unmount
-        return () => {
-            window.removeEventListener('refreshTranscriptions', handleRefresh);
-        };
+    useEffect(() => {
+        // Fetch all transcriptions on component mount
+        fetchTranscriptions();
     }, []);
 
-    const filteredTranscriptions = transcriptions.filter(transcription =>
-        transcription.original_audio_filename.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const handleSearch = (e) => {
+        if (e.key === 'Enter' || e.type === 'click') {
+            searchTranscriptions(searchTerm);
+        }
+    };
 
     return (
         <div className="mt-8 w-full max-w-3xl p-4 bg-gray-800 rounded-xl shadow-md">
@@ -45,8 +51,12 @@ const TranscriptionList = () => {
                 placeholder="Search by audio file name"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
+                onKeyPress={handleSearch} // Trigger search on Enter key press
                 className="border border-gray-600 rounded p-2 w-full mb-4"
             />
+            <button onClick={handleSearch} className="mb-4 p-2 bg-blue-500 text-white rounded">
+                Search
+            </button>
             <h2 className="text-xl font-semibold mb-2">Transcriptions</h2>
             <table className="min-w-full bg-gray-800">
                 <thead>
@@ -57,7 +67,7 @@ const TranscriptionList = () => {
                     </tr>
                 </thead>
                 <tbody>
-                    {filteredTranscriptions.map(transcription => (
+                    {transcriptions.map(transcription => (
                         <React.Fragment key={transcription.id}>
                             <tr className="hover:bg-gray-600">
                                 <td className="border-b border-gray-600 p-3">{transcription.id}</td>
