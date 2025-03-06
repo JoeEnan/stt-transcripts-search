@@ -87,7 +87,7 @@ const FileUpload = () => {
     };
 
     return (
-        <div className="bg-gray-800 p-4 rounded-xl shadow-md w-full max-w-md relative">
+        <div className="bg-gray-800 p-4 mt-4 rounded-xl shadow-md w-full max-w-md relative">
             {/* Notifications Container */}
             <motion.div 
                 className="fixed top-4 right-4 flex flex-col space-y-2 z-50"

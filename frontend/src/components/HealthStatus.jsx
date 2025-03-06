@@ -24,13 +24,14 @@ const HealthStatus = () => {
 
     useEffect(() => {
         checkHealth();
-        const interval = setInterval(checkHealth, 10000); // Check health 10 seconds
+        const interval = setInterval(checkHealth, 10000); // Check health every 10 seconds
         return () => clearInterval(interval);
     }, []);
 
     return (
-        <div className={`flex relative p-2 rounded
-            ${isHealthy === true ? 'bg-green-700' : isHealthy === false ? 'bg-red-700' : 'bg-gray-600'}
+        <div className={`flex relative p-2 rounded text-gray-200 bg-gray-800
+            border-2 
+            ${isHealthy === true ? 'border-green-500' : isHealthy === false ? 'border-red-500' : 'border-gray-500'}
             md:absolute md:top-4 md:left-4`}>
             <h2 className="text-lg">{status}</h2>
         </div>
@@ -38,4 +39,3 @@ const HealthStatus = () => {
 };
 
 export default HealthStatus;
-
