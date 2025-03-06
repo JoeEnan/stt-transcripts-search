@@ -25,7 +25,8 @@ const Notification = ({ message, type, onClose }) => {
             setRemainingTime((time) => {
                 if (time <= 100) {
                     clearInterval(intervalRef.current);
-                    onClose();
+                    // Use setTimeout to ensure onClose is called after the current render cycle
+                    setTimeout(() => onClose(), 0);
                     return 0;
                 }
                 return time - 100;
