@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import Notification from './Notification';
-import { v4 as uuidv4 } from 'uuid'; // Import uuid
+import { v4 as uuidv4 } from 'uuid'; 
 import { motion } from 'framer-motion';
 
 const FileUpload = () => {
@@ -10,6 +10,10 @@ const FileUpload = () => {
 
     const handleFileSelect = (e) => {
         setFiles([...e.target.files]);
+    };
+
+    const removeFile = (fileName) => {
+        setFiles((prevFiles) => prevFiles.filter(file => file.name !== fileName));
     };
 
     const uploadFiles = async () => {
@@ -30,6 +34,7 @@ const FileUpload = () => {
             if (response.ok) {
                 const data = await response.json();
                 displayNotification('Success', 'Files Uploaded!', 'success', 'All files');
+
                 if (data.batch_uuid) {
                     listenForTranscriptionUpdates(data.batch_uuid);
                 }
@@ -51,7 +56,6 @@ const FileUpload = () => {
 
     const listenForTranscriptionUpdates = (batch_uuid) => {
         const ws = new WebSocket(`ws://localhost:9090/ws/transcript_ready/${batch_uuid}`);
-
         ws.onopen = () => console.log("Connected to WebSocket for transcription updates.");
         ws.onmessage = (event) => handleWebSocketMessage(event.data);
         ws.onerror = (error) => console.error("WebSocket error:", error);
@@ -114,23 +118,35 @@ const FileUpload = () => {
                 className="hidden"
                 ref={fileInputRef}
             />
-            <label className="border border-gray-600 rounded p-2 w-full mb-2 flex justify-between items-center cursor-pointer"
-                onClick={() => fileInputRef.current.click()}>
-                <span>{files.length ? `${files.length} file(s) selected` : 'Choose files'}</span>
+            <label className="border border-gray-600 rounded p-2 w-full mb-2 flex justify-between items-center cursor-pointer bg-gray-700 hover:bg-gray-600 transition-colors"
+                onClick={() => fileInputRef.current.click()}
+            >
+                <span className="text-white">{files.length ? `${files.length} file(s) selected` : 'Choose files'}</span>
                 <span className="text-gray-500">{files.length ? '✓' : ''}</span>
             </label>
             <ul className="list-disc pl-5 mb-2 text-white">
                 {Array.from(files).map((file, index) => (
-                    <li key={index}>{file.name}</li>
+                    <li key={index} className="flex justify-between items-center mb-2">
+                        <span className="cursor-pointer">{file.name}</span>
+                        <button 
+                            onClick={() => removeFile(file.name)}
+                            className="bg-red-600 text-white rounded-full px-2 ml-2 hover:bg-red-700" // Added margin (ml-2) for spacing
+                        >
+                            X
+                        </button>
+                    </li>
                 ))}
             </ul>
-            <button
-                onClick={uploadFiles}
-                className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors"
-            >
-                Upload
-            </button>
+            <div className="flex justify-end">
+                <button
+                    onClick={uploadFiles}
+                    className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors"
+                >
+                    Upload
+                </button>
+            </div>
         </div>
     );
 };
+
 export default FileUpload;
