@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from database import init_db
+from log_config import logger
 from routes import health, transcriptions, websocket
 
 app = FastAPI()
@@ -20,11 +21,10 @@ app.add_middleware(
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    print("Ensuring database exists")
+    logger.info("Ensuring database exists")
     init_db()
 
     yield
-    print("Cleaning up models")
 
 
 app.router.lifespan_context = lifespan

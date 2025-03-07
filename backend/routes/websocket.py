@@ -4,6 +4,7 @@ from fastapi import (
     WebSocketDisconnect,
 )
 
+from log_config import logger
 from utils.transcriber import save_transcription, transcribe_audio
 
 router = APIRouter(prefix="/ws", tags=["websocket"])
@@ -23,9 +24,9 @@ async def websocket_endpoint(websocket: WebSocket, batch_uuid: str):
                 {"status": "message_received", "message": message}
             )
     except WebSocketDisconnect:
-        print("WebSocket disconnected")
+        logger.info("WebSocket disconnected")
     except Exception as e:
-        print(f"Error in WebSocket: {e}")
+        logger.error(f"Error in WebSocket: {e}")
     finally:
         connected_websockets[batch_uuid].remove(websocket)
         if not connected_websockets[batch_uuid]:
@@ -33,7 +34,7 @@ async def websocket_endpoint(websocket: WebSocket, batch_uuid: str):
         try:
             await websocket.close()
         except RuntimeError:
-            print("WebSocket already closed.")
+            logger.info("WebSocket already closed.")
 
 
 async def transcribe_audio_task(
@@ -58,7 +59,7 @@ async def transcribe_audio_task(
                     }
                 )
             except Exception as e:
-                print(f"Failed to send message over WebSocket: {e}")
+                logger.error(f"Failed to send message over WebSocket: {e}")
 
     # For batch upload, final batch completion message
     if len(file_paths) > 1:
@@ -72,7 +73,7 @@ async def transcribe_audio_task(
                     }
                 )
             except Exception as e:
-                print(
+                logger.error(
                     f"Failed to send final completion message for batch job over WebSocket: {e}"
                 )
     else:
@@ -84,6 +85,6 @@ async def transcribe_audio_task(
                 }
             )
         except Exception as e:
-            print(
+            logger.error(
                 f"Failed to send final completion message for single job over WebSocket: {e}"
             )
