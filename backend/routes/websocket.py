@@ -5,7 +5,7 @@ from fastapi import (
 )
 
 from log_config import logger
-from utils.transcriber import save_transcription, transcribe_audio
+from utils.websocket_manager import add_websocket, remove_websocket
 
 router = APIRouter(prefix="/ws", tags=["websocket"])
 
@@ -15,76 +15,18 @@ connected_websockets = {}
 @router.websocket("/transcript_ready/{batch_uuid}")
 async def websocket_endpoint(websocket: WebSocket, batch_uuid: str):
     await websocket.accept()
-    connected_websockets[batch_uuid] = connected_websockets.get(batch_uuid, set())
-    connected_websockets[batch_uuid].add(websocket)
+    add_websocket(batch_uuid, websocket)  # Add the new websocket connection
     try:
         while True:
             message = await websocket.receive_text()
-            await websocket.send_json(
-                {"status": "message_received", "message": message}
-            )
+            await websocket.send_json({"status": "message_received", "message": message})
     except WebSocketDisconnect:
         logger.info("WebSocket disconnected")
     except Exception as e:
         logger.error(f"Error in WebSocket: {e}")
     finally:
-        connected_websockets[batch_uuid].remove(websocket)
-        if not connected_websockets[batch_uuid]:
-            del connected_websockets[batch_uuid]
+        remove_websocket(batch_uuid, websocket)  # Remove the websocket on disconnect
         try:
             await websocket.close()
         except RuntimeError:
             logger.info("WebSocket already closed.")
-
-
-async def transcribe_audio_task(
-    batch_uuid: str, file_paths: list[str], original_audio_names: list[str]
-):
-    results = []
-    # This will run asynchronously as needed by Whisper
-    for file_path, original_audio_name in zip(
-        file_paths, original_audio_names, strict=False
-    ):
-        transcribed_text = transcribe_audio(file_path)
-        save_transcription(file_path, original_audio_name, transcribed_text)
-        results.append({"file": original_audio_name})
-        # Notify relevant connected WebSocket clients that transcription is done
-        for websocket in connected_websockets.get(batch_uuid, set()):
-            try:
-                await websocket.send_json(
-                    {
-                        "status": "completed",
-                        "file": original_audio_name,
-                        "text": transcribed_text,
-                    }
-                )
-            except Exception as e:
-                logger.error(f"Failed to send message over WebSocket: {e}")
-
-    # For batch upload, final batch completion message
-    if len(file_paths) > 1:
-        for websocket in connected_websockets.get(batch_uuid, set()):
-            try:
-                await websocket.send_json(
-                    {
-                        "status": "batch_completed",
-                        "total_files": len(file_paths),
-                        "results": results,
-                    }
-                )
-            except Exception as e:
-                logger.error(
-                    f"Failed to send final completion message for batch job over WebSocket: {e}"
-                )
-    else:
-        try:
-            await websocket.send_json(
-                {
-                    "status": "job_completed",
-                    "results": results,
-                }
-            )
-        except Exception as e:
-            logger.error(
-                f"Failed to send final completion message for single job over WebSocket: {e}"
-            )

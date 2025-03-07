@@ -8,6 +8,7 @@ from fastapi.staticfiles import StaticFiles
 from database import init_db
 from log_config import logger
 from routes import health, transcriptions, websocket
+from utils.websocket_manager import clear_websockets
 
 app = FastAPI()
 
@@ -26,6 +27,8 @@ async def lifespan(app: FastAPI):
     init_db()
 
     yield
+    # This will clear all connected websockets when lifecycle ends
+    clear_websockets()
 
 
 app.router.lifespan_context = lifespan

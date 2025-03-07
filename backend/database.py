@@ -4,7 +4,7 @@ from datetime import UTC, datetime
 from sqlalchemy import Column, DateTime, Integer, String, Text, create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 
-DATABASE_URL = "sqlite:///./data/transcriptions.db"
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./data/transcriptions.db")
 
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -21,5 +21,11 @@ class Transcription(Base):
 
 
 def init_db():
-    if not os.path.isfile("transcriptions.db"):
-        Base.metadata.create_all(bind=engine)
+    Base.metadata.create_all(bind=engine)
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()

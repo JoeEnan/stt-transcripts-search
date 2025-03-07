@@ -84,11 +84,13 @@ ignore = [
     "W191",
 
     #### project specific
-    "FIX002", # too verbose descriptions of todos
-    "S104",   # bind all interfaces
-    "BLE",    # Catch all exceptions
-    "FBT",    # boolean positional fine for API
-    "G004",   # allow fstrings in logging
+    "FIX002",   # too verbose descriptions of todos
+    "S104",     # bind all interfaces
+    "BLE",      # Catch all exceptions
+    "FBT",      # boolean positional fine for API
+    "G004",     # allow fstrings in logging
+    "B008",     # Depends keyword for FastAPI
+    "FAST002",  # requiring Annotated keyword
 ]
 
 # Allow fix for all enabled rules (when `--fix`) is provided.

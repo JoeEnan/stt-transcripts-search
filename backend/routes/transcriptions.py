@@ -1,23 +1,25 @@
-import asyncio
 import logging
 import os
-import uuid
 from typing import Annotated
 
-import aiofiles
 from fastapi import (
     APIRouter,
     BackgroundTasks,
+    Depends,
     File,
     HTTPException,
     Query,
     UploadFile,
 )
-from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import JSONResponse
+from sqlalchemy.orm import Session
 
-from routes.websocket import transcribe_audio_task
-from utils.search import search_transcriptions
+from database import get_db
+from utils.db_operations import (
+    db_get_transcriptions,
+    db_search_transcriptions,
+)
+from utils.transcriber import transcribe_files
 
 router = APIRouter(prefix="/api", tags=["transcriptions"])
 
@@ -31,36 +33,15 @@ logger = logging.getLogger(__name__)
 
 @router.post("/transcribe")
 async def transcribe(
-    background_tasks: BackgroundTasks, files: Annotated[list[UploadFile], File()] = ...
+    background_tasks: BackgroundTasks,
+    files: list[UploadFile] = File(...),
+    db: Session = Depends(get_db),
 ) -> JSONResponse:
     if not all(file.filename.endswith((".wav", ".mp3", ".m4a")) for file in files):
         logger.error("Unsupported file format")
         raise HTTPException(status_code=400, detail="Unsupported file format")
 
-    batch_uuid = str(uuid.uuid4())
-    audio_paths = []
-    original_audio_names = []
-
-    for file in files:
-        unique_filename = f"{batch_uuid}_{file.filename}"
-        audio_path = os.path.join(AUDIO_STORAGE_PATH, unique_filename)
-        audio_paths.append(audio_path)
-        original_audio_names.append(file.filename)
-
-        try:
-            async with aiofiles.open(audio_path, "wb") as buffer:
-                await buffer.write(await file.read())
-        except Exception as e:
-            logger.exception(f"Error writing file {file.filename}: {e}")
-            raise HTTPException(status_code=500, detail="Error saving file") from e
-
-    # Start transcription task
-    background_tasks.add_task(
-        run_in_threadpool,
-        lambda: asyncio.run(
-            transcribe_audio_task(batch_uuid, audio_paths, original_audio_names)
-        ),
-    )
+    batch_uuid = await transcribe_files(files, background_tasks, db)
 
     logger.info(f"Transcription started for batch: {batch_uuid}")
     return JSONResponse(
@@ -73,8 +54,8 @@ async def transcribe(
 
 
 @router.get("/transcriptions")
-async def get_transcriptions():
-    transcriptions = search_transcriptions(file_name="")
+async def get_transcriptions(db: Session = Depends(get_db)) -> JSONResponse:
+    transcriptions = db_get_transcriptions(db=db)
     return JSONResponse(
         content=[
             {
@@ -97,8 +78,11 @@ async def search(
         bool, Query(description="Match full file name only")
     ] = False,
     match_case: Annotated[bool, Query(description="Match case sensitive")] = False,
-):
-    transcriptions = search_transcriptions(file_name, match_full_file_name, match_case)
+    db: Session = Depends(get_db),
+) -> JSONResponse:
+    transcriptions = db_search_transcriptions(
+        file_name, match_full_file_name, match_case, db=db
+    )
     return JSONResponse(
         content=[
             {
