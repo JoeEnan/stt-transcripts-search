@@ -88,6 +88,7 @@ ignore = [
     "S104",   # bind all interfaces
     "BLE",    # Catch all exceptions
     "FBT",    # boolean positional fine for API
+    "G004",   # allow fstrings in logging
 ]
 
 # Allow fix for all enabled rules (when `--fix`) is provided.

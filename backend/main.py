@@ -1,3 +1,4 @@
+import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -33,7 +34,7 @@ app.include_router(health.router)
 app.include_router(transcriptions.router)
 app.include_router(websocket.router)
 
-AUDIO_STORAGE_PATH = "audio_storage"
+AUDIO_STORAGE_PATH = os.getenv("AUDIO_STORAGE_PATH", "audio_storage")
 app.mount("/audio_storage", StaticFiles(directory=AUDIO_STORAGE_PATH))
 
 if __name__ == "__main__":
