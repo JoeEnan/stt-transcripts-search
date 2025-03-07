@@ -22,6 +22,9 @@ os.environ["DATABASE_URL"] = "sqlite:///:memory:"
 # -------------------------------
 @pytest.fixture(scope="module")
 def test_engine():
+    """
+    Create the SQLAlchemy engine for an in-memory SQLite database.
+    """
     engine = create_engine(
         os.getenv("DATABASE_URL"),
         connect_args={"check_same_thread": False},
@@ -32,7 +35,9 @@ def test_engine():
 
 @pytest.fixture(scope="module", autouse=True)
 def setup_database(test_engine):
-    # Create all tables before any tests run and drop them afterward.
+    """
+    Setup and teardown the database schema for the test module.
+    """
     Base.metadata.create_all(bind=test_engine)
     yield
     Base.metadata.drop_all(bind=test_engine)
@@ -40,9 +45,11 @@ def setup_database(test_engine):
 
 @pytest.fixture
 def db_session(test_engine):
+    """
+    Create a new SQLAlchemy session for each test and ensure a clean database state.
+    """
     SessionTesting = sessionmaker(autocommit=False, autoflush=False, bind=test_engine)
     session = SessionTesting()
-    # Clear the transcriptions table before each test.
     session.query(Transcription).delete()
     session.commit()
     yield session
@@ -54,7 +61,8 @@ def db_session(test_engine):
 # -------------------------------
 def test_transcribe_audio(monkeypatch):
     """
-    Test transcribe_audio by monkey-patching the whisper model's transcribe method.
+    Verify that transcriber.transcribe_audio returns the expected transcription text
+    when the underlying transcription model is mocked.
     """
     # Monkey-patch the transcribe method on the model to return a dummy response.
     monkeypatch.setattr(
@@ -64,8 +72,11 @@ def test_transcribe_audio(monkeypatch):
     assert result == "dummy transcribed text"
 
 
-# Create a dummy websocket that simply collects messages that are sent.
 class DummyWebSocket:
+    """
+    A dummy websocket for collecting sent messages in tests.
+    """
+
     def __init__(self):
         self.sent_messages = []
         self.closed = False
@@ -77,10 +88,15 @@ class DummyWebSocket:
         self.closed = True
 
 
-# Unit test for process_transcription_batch
 @pytest.mark.asyncio
 async def test_process_transcription_batch(db_session, monkeypatch):
-    clear_websockets()  # Ensure no leftover websockets from previous tests.
+    """
+    Test the asynchronous batch transcription process by verifying that:
+      - The dummy transcription model returns a preset transcription.
+      - The transcriptions are correctly saved to the database.
+      - The corresponding websocket receives the right messages.
+    """
+    clear_websockets()
 
     # Monkey-patch transcribe_audio to return a fixed string regardless of file.
     monkeypatch.setattr(
@@ -132,9 +148,8 @@ async def test_process_transcription_batch(db_session, monkeypatch):
 # -------------------------------
 def test_db_save_and_get_transcriptions(db_session):
     """
-    Test that db_save_transcription saves a record and db_get_transcriptions retrieves it.
+    Confirm that a transcription record saved using db_operations can be retrieved correctly.
     """
-    # Save a transcription using the db_operations helper.
     db_operations.db_save_transcription(
         audio_filepath="audio/path.mp3",
         original_audio_filename="original.mp3",
@@ -152,36 +167,71 @@ def test_db_save_and_get_transcriptions(db_session):
 
 def test_db_search_transcriptions(db_session):
     """
-    Test various scenarios of searching transcriptions.
+    Test the db_search_transcriptions function from the db_operations module with various search criteria.
+
+    This test verifies that:
+      - A partial search (case-insensitive) returns all records containing the search term.
+      - A full file name match (case-insensitive) with an exact file name returns records regardless of case.
+      - A partial search with case sensitivity returns only the records where the search term appears with exact case.
+      - A full file name match with case sensitivity returns exactly one record for an exact match.
     """
-    # First, insert multiple records.
+    # Insert multiple records into the database.
     db_operations.db_save_transcription(
         "audio1.mp3", "Sample1.mp3", "text 1", db=db_session
     )
     db_operations.db_save_transcription(
-        "audio2.mp3", "sample2.mp3", "text 2", db=db_session
+        "audio1.mp3", "Sample11.mp3", "text 1", db=db_session
     )
     db_operations.db_save_transcription(
-        "audio3.mp3", "another_sample.MP3", "text 3", db=db_session
+        "audio1.mp3", "sample1.mp3", "text 2", db=db_session
+    )
+    db_operations.db_save_transcription(
+        "audio2.mp3", "sample2.mp3", "text 3", db=db_session
+    )
+    db_operations.db_save_transcription(
+        "audio3.mp3", "another_sample.MP3", "text 4", db=db_session
     )
 
     # Test partial search (case-insensitive).
+    # Searching for "sample" should return all 5 records because "sample" appears (ignoring case)
+    # in each original_audio_filename.
     results_partial = db_operations.db_search_transcriptions(
         "sample", match_full_file_name=False, match_case=False, db=db_session
     )
-    # Expect all three records to match when using lower-case search.
-    assert len(results_partial) == 3
+    assert len(results_partial) == 5
 
-    # Test full file name match (case-insensitive).
-    results_full = db_operations.db_search_transcriptions(
+    # Test full file name match (case-insensitive):
+    # Using "Sample1.mp3" should match both "Sample1.mp3" and "sample1.mp3" when performing a full
+    # file name match without considering case.
+    results_full_insensitive = db_operations.db_search_transcriptions(
         "Sample1.mp3", match_full_file_name=True, match_case=False, db=db_session
     )
-    assert len(results_full) == 1
-    assert results_full[0].original_audio_filename == "Sample1.mp3"
-
-    # Test full file name match with match_case=True (exact match).
-    results_case_exact = db_operations.db_search_transcriptions(
-        "sample1.mp3", match_full_file_name=True, match_case=True, db=db_session
+    assert len(results_full_insensitive) == 2, (
+        f"Expected 2 records for case-insensitive full-match; got: {results_full_insensitive}"
     )
-    # "Sample1.mp3" was saved so the exact (case-sensitive) match for "sample1.mp3" should return no records.
-    assert len(results_case_exact) == 0
+    # Verify that the matched filenames are exactly "Sample1.mp3" and "sample1.mp3".
+    filenames = {record.original_audio_filename for record in results_full_insensitive}
+    assert filenames == {"Sample1.mp3", "sample1.mp3"}
+
+    # Test partial search with case sensitivity:
+    # Using "Sample1" should return only those filenames where the substring "Sample1" appears with the exact case.
+    # In this case, it should match "Sample1.mp3" and "Sample11.mp3".
+    results_partial_sensitive = db_operations.db_search_transcriptions(
+        "Sample1", match_full_file_name=False, match_case=True, db=db_session
+    )
+    assert len(results_partial_sensitive) == 2, (
+        f"Expected 2 records for case-sensitive partial search; got: {results_partial_sensitive}"
+    )
+    # Check that the returned filenames are "Sample1.mp3" and "Sample11.mp3".
+    filenames = {record.original_audio_filename for record in results_partial_sensitive}
+    assert filenames == {"Sample1.mp3", "Sample11.mp3"}
+
+    # Test full file name match with case sensitivity (exact match):
+    # Using "Sample1.mp3" should return only the record with an exact matching original_audio_filename.
+    results_full_sensitive = db_operations.db_search_transcriptions(
+        "Sample1.mp3", match_full_file_name=True, match_case=True, db=db_session
+    )
+    assert len(results_full_sensitive) == 1, (
+        f"Expected 1 record for case-sensitive full-match; got: {results_full_sensitive}"
+    )
+    assert results_full_sensitive[0].original_audio_filename == "Sample1.mp3"
