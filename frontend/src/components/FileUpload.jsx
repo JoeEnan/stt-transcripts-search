@@ -67,12 +67,14 @@ const FileUpload = () => {
         switch (message.status) {
             case "batch_completed":
                 displayNotification('Success', 'Batch processing is complete.', 'success', 'All files');
-                // Dispatch an event to refresh transcriptions
+                resetFileInput();
+                window.dispatchEvent(new CustomEvent('clearSearchContent'));
                 window.dispatchEvent(new CustomEvent('refreshTranscriptions'));
                 break;
             case "job_completed":
                 displayNotification('Success', 'Processing complete for all audio files.', 'success', 'All files');
-                // Dispatch an event to refresh transcriptions
+                resetFileInput();
+                window.dispatchEvent(new CustomEvent('clearSearchContent'));
                 window.dispatchEvent(new CustomEvent('refreshTranscriptions'));
                 break;
             case "completed":
@@ -134,7 +136,7 @@ const FileUpload = () => {
                         <span className="cursor-pointer">{file.name}</span>
                         <button
                             onClick={() => removeFile(file.name)}
-                            className="bg-red-600 text-white rounded-full px-2 ml-2 hover:bg-red-700" // Added margin (ml-2) for spacing
+                            className="bg-red-600 text-white rounded-full px-2 ml-2 hover:bg-red-700"
                         >
                             X
                         </button>

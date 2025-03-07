@@ -42,6 +42,14 @@ const TranscriptionList = () => {
     useEffect(() => {
         // Fetch all transcriptions on component mount
         fetchTranscriptions();
+        const clearSearchListener = () => {
+            handleClearSearch();
+        };
+
+        window.addEventListener('clearSearchContent', clearSearchListener);
+        return () => {
+            window.removeEventListener('clearSearchContent', clearSearchListener);
+        };
     }, []);
 
     // When triggering search, check for Enter or click event.
