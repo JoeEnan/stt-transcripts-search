@@ -1,11 +1,29 @@
-from sqlalchemy.orm import Session
+from sqlalchemy import func
 
-from database import Transcription
+from database import SessionLocal, Transcription
 
 
-def search_transcriptions(db: Session, file_name: str):
-    return (
-        db.query(Transcription)
-        .filter(Transcription.audio_file.like(f"%{file_name}%"))
-        .all()
-    )
+def search_transcriptions(file_name: str, match_full_file_name=False, match_case=False):
+    with SessionLocal() as db:
+        query = db.query(Transcription)
+
+        if match_full_file_name:
+            if match_case:
+                query = query.filter(Transcription.original_audio_filename == file_name)
+            else:
+                query = query.filter(
+                    func.lower(Transcription.original_audio_filename)
+                    == file_name.lower()
+                )
+        elif match_case:
+            query = query.filter(
+                Transcription.original_audio_filename.op("GLOB")(f"*{file_name}*")
+            )
+        else:
+            query = query.filter(
+                func.lower(Transcription.original_audio_filename).like(
+                    f"%{file_name.lower()}%"
+                )
+            )
+
+        return query.all()
