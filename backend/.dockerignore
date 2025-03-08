@@ -1,0 +1,29 @@
+# Ignore all Python cache directories
+__pycache__/
+*.py[cod]
+
+# Ignore virtual environments
+.venv/
+
+# Ignore pytest cache
+.pytest_cache/
+
+# Ignore Docker-related files
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Ignore audio storage folder contents
+audio_storage/*
+!foldername
+
+# Ignore data folder contents
+data/*
+!data
+
+# Ignore environment variables file
+.env
+
+# Ignore IDE-specific files
+.idea/
+.vscode/

@@ -1,0 +1,36 @@
+services:
+  backend:
+    build:
+      context: ./backend
+    ports:
+      - "9090:9090"
+    environment:
+      # Ensure DATABASE_URL and AUDIO_STORAGE_PATH are set appropriately
+      - DATABASE_URL=sqlite:///./data/transcriptions.db
+      - AUDIO_STORAGE_PATH=audio_storage
+    volumes:
+      - data:/app/data
+      - audio_storage:/app/audio_storage
+    develop:
+      # Create a `watch` configuration to update the application
+      # https://docs.docker.com/compose/file-watch/#compose-watch-versus-bind-mounts
+      watch:
+        # Sync the working directory with the `/app` directory in the container
+        - action: sync
+          path: ./backend
+          target: /app
+          ignore:
+            # Exclude the project virtual environment — it could be for a
+            # different platform in the container
+            - .venv/
+            # Exclude audio_storage and data as they are docker managed
+            - audio_storage
+            - data
+
+        # Rebuild the image if dependencies change by checking uv.lock
+        - action: rebuild
+          path: ./uv.lock
+
+volumes:
+  data:
+  audio_storage:

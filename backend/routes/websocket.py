@@ -19,7 +19,9 @@ async def websocket_endpoint(websocket: WebSocket, batch_uuid: str):
     try:
         while True:
             message = await websocket.receive_text()
-            await websocket.send_json({"status": "message_received", "message": message})
+            await websocket.send_json(
+                {"status": "message_received", "message": message}
+            )
     except WebSocketDisconnect:
         logger.info("WebSocket disconnected")
     except Exception as e:

@@ -6,5 +6,3 @@ audio_storage/*.wav
 audio_storage/*.m4a
 
 transcriptions.db
-
-app_test*.py

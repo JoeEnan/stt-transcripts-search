@@ -22,7 +22,7 @@ app.add_middleware(
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI):  # noqa: ARG001, `app` is required for lifespan context manager
     logger.info("Ensuring database exists")
     init_db()
 
@@ -43,4 +43,4 @@ app.mount("/audio_storage", StaticFiles(directory=AUDIO_STORAGE_PATH))
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run("main:app", host="0.0.0.0", port=9090, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=9090, reload=False)
