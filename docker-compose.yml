@@ -14,6 +14,7 @@ services:
     develop:
       # Create a `watch` configuration to update the application
       # https://docs.docker.com/compose/file-watch/#compose-watch-versus-bind-mounts
+      # Note: CANNOT be used with detached mode.
       watch:
         # Sync the working directory with the `/app` directory in the container
         - action: sync
@@ -23,9 +24,11 @@ services:
             # Exclude the project virtual environment — it could be for a
             # different platform in the container
             - .venv/
-            # Exclude audio_storage and data as they are docker managed
+            # Exclude any docker managed directories
             - audio_storage
             - data
+            # Exclude test dir
+            - tests/
 
         # Rebuild the image if dependencies change by checking uv.lock
         - action: rebuild
