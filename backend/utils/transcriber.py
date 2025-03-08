@@ -36,7 +36,8 @@ async def transcribe_files(
             async with aiofiles.open(audio_path, "wb") as buffer:
                 await buffer.write(await file.read())
         except Exception as e:
-            raise Exception(f"Error writing file {file.filename}: {e}")
+            msg = f"Error writing file {file.filename}: {e}"
+            raise Exception(msg) from e
 
     # Start transcription task
     background_tasks.add_task(

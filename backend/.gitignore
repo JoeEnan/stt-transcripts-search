@@ -1,0 +1,10 @@
+__pycache__
+.pytest_cache
+
+audio_storage/*.mp3
+audio_storage/*.wav
+audio_storage/*.m4a
+
+transcriptions.db
+
+app_test*.py

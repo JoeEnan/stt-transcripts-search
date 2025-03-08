@@ -48,8 +48,8 @@ def db_session(test_engine):
     """
     Create a new SQLAlchemy session for each test and ensure a clean database state.
     """
-    SessionTesting = sessionmaker(autocommit=False, autoflush=False, bind=test_engine)
-    session = SessionTesting()
+    test_session = sessionmaker(autocommit=False, autoflush=False, bind=test_engine)
+    session = test_session()
     session.query(Transcription).delete()
     session.commit()
     yield session
@@ -66,7 +66,7 @@ def test_transcribe_audio(monkeypatch):
     """
     # Monkey-patch the transcribe method on the model to return a dummy response.
     monkeypatch.setattr(
-        transcriber.model, "transcribe", lambda fp: {"text": "dummy transcribed text"}
+        transcriber.model, "transcribe", lambda _: {"text": "dummy transcribed text"}
     )
     result = transcriber.transcribe_audio("dummy_audio_path.mp3")
     assert result == "dummy transcribed text"
@@ -92,15 +92,15 @@ class DummyWebSocket:
 async def test_process_transcription_batch(db_session, monkeypatch):
     """
     Test the asynchronous batch transcription process by verifying that:
-      - The dummy transcription model returns a preset transcription.
-      - The transcriptions are correctly saved to the database.
-      - The corresponding websocket receives the right messages.
+        - The dummy transcription model returns a preset transcription.
+        - The transcriptions are correctly saved to the database.
+        - The corresponding websocket receives the right messages.
     """
     clear_websockets()
 
     # Monkey-patch transcribe_audio to return a fixed string regardless of file.
     monkeypatch.setattr(
-        transcriber.model, "transcribe", lambda fp: {"text": "unit-test transcription"}
+        transcriber.model, "transcribe", lambda _: {"text": "unit-test transcription"}
     )
 
     # Use dummy websocket for a given batch_uuid.
@@ -170,10 +170,10 @@ def test_db_search_transcriptions(db_session):
     Test the db_search_transcriptions function from the db_operations module with various search criteria.
 
     This test verifies that:
-      - A partial search (case-insensitive) returns all records containing the search term.
-      - A full file name match (case-insensitive) with an exact file name returns records regardless of case.
-      - A partial search with case sensitivity returns only the records where the search term appears with exact case.
-      - A full file name match with case sensitivity returns exactly one record for an exact match.
+        - A partial search (case-insensitive) returns all records containing the search term.
+        - A full file name match (case-insensitive) with an exact file name returns records regardless of case.
+        - A partial search with case sensitivity returns only the records where the search term appears with exact case.
+        - A full file name match with case sensitivity returns exactly one record for an exact match.
     """
     # Insert multiple records into the database.
     db_operations.db_save_transcription(

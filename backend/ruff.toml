@@ -78,6 +78,7 @@ ignore = [
     "Q001",
     "Q002",
     "Q003",
+    "TRY002", # custom exceptions
     "TRY003", # external messages in exceptions are too verbose
     "TD002",
     "TD003",

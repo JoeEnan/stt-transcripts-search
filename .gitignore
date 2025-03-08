@@ -1,8 +1,0 @@
-__pycache__
-.pytest_cache
-
-backend/audio_storage
-
-transcriptions.db
-
-app_test*.py
