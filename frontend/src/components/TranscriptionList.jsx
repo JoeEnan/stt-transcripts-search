@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import matchCaseIcon from '../assets/match-case.svg';
 import fullFileIcon from '../assets/match_full_file_name.svg';
+import config from '../config';
 
 const TranscriptionList = () => {
     const [transcriptions, setTranscriptions] = useState([]);
@@ -11,7 +12,7 @@ const TranscriptionList = () => {
     // Function to fetch all transcriptions
     const fetchTranscriptions = async () => {
         try {
-            const response = await fetch('http://localhost:9090/api/transcriptions');
+            const response = await fetch(`${config.apiBaseUrl}/transcriptions`);
             const data = await response.json();
             setTranscriptions(data);
         } catch (error) {
@@ -31,7 +32,7 @@ const TranscriptionList = () => {
                 match_full_file_name: matchFullFileName,
                 match_case: matchCase,
             });
-            const response = await fetch(`http://localhost:9090/api/search?${params.toString()}`);
+            const response = await fetch(`${config.apiBaseUrl}/search?${params.toString()}`);
             const data = await response.json();
             setTranscriptions(data);
         } catch (error) {
@@ -153,9 +154,9 @@ const TranscriptionList = () => {
                             <tr>
                                 <td colSpan="3" className="border-b border-gray-600 p-3">
                                     <audio controls className="w-full">
-                                        <source src={transcription.audio_filepath} type="audio/m4a" />
-                                        <source src={transcription.audio_filepath.replace(/\.m4a$/, '.mp3')} type="audio/mp3" />
-                                        <source src={transcription.audio_filepath.replace(/\.m4a$/, '.wav')} type="audio/wav" />
+                                        <source src={`${config.apiBaseUrl}/${transcription.audio_filepath}`} type="audio/m4a" />
+                                        <source src={`${config.apiBaseUrl}/${transcription.audio_filepath.replace(/\.m4a$/, '.mp3')}`} type="audio/mp3" />
+                                        <source src={`${config.apiBaseUrl}/${transcription.audio_filepath.replace(/\.m4a$/, '.wav')}`} type="audio/wav" />
                                         Your browser does not support the audio element.
                                     </audio>
                                 </td>

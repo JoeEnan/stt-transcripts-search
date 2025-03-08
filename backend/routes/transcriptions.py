@@ -60,7 +60,7 @@ async def get_transcriptions(db: Session = Depends(get_db)) -> JSONResponse:
         content=[
             {
                 "id": transcription.id,
-                "audio_filepath": f"http://localhost:9090/{transcription.audio_filepath}",
+                "audio_filepath": f"{transcription.audio_filepath}",
                 "original_audio_filename": transcription.original_audio_filename,
                 "text": transcription.text,
                 "created_at": transcription.created_at.isoformat(),
@@ -87,7 +87,7 @@ async def search(
         content=[
             {
                 "id": transcription.id,
-                "audio_filepath": f"http://localhost:9090/{transcription.audio_filepath}",
+                "audio_filepath": f"{transcription.audio_filepath}",
                 "original_audio_filename": transcription.original_audio_filename,
                 "text": transcription.text,
                 "created_at": transcription.created_at.isoformat(),

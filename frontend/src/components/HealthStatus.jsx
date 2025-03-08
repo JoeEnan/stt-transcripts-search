@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import config from '../config';
 
 const HealthStatus = () => {
     const [status, setStatus] = useState('Checking...');
@@ -6,7 +7,7 @@ const HealthStatus = () => {
 
     const checkHealth = async () => {
         try {
-            const response = await fetch('http://localhost:9090/api/health');
+            const response = await fetch(`${config.apiBaseUrl}/health`);
             const data = await response.json();
             if (response.ok && data.status === 'OK') {
                 setStatus('API Health Status: Healthy');

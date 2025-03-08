@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
+import config from '../config';
 
 const Notification = ({ message, type, onClose }) => {
     const accentColors = {

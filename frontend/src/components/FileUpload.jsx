@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import Notification from './Notification';
 import { v4 as uuidv4 } from 'uuid';
 import { motion } from 'framer-motion';
+import config from '../config';
 
 const FileUpload = () => {
     const [files, setFiles] = useState([]);
@@ -26,7 +27,7 @@ const FileUpload = () => {
         files.forEach(file => formData.append('files', file));
 
         try {
-            const response = await fetch('http://localhost:9090/api/transcribe', {
+            const response = await fetch(`${config.apiBaseUrl}/transcribe`, {
                 method: 'POST',
                 body: formData,
             });
@@ -55,7 +56,7 @@ const FileUpload = () => {
     };
 
     const listenForTranscriptionUpdates = (batch_uuid) => {
-        const ws = new WebSocket(`ws://localhost:9090/ws/transcript_ready/${batch_uuid}`);
+        const ws = new WebSocket(`${config.webSocketUrl}/transcript_ready/${batch_uuid}`);
         ws.onopen = () => console.log("Connected to WebSocket for transcription updates.");
         ws.onmessage = (event) => handleWebSocketMessage(event.data);
         ws.onerror = (error) => console.error("WebSocket error:", error);
