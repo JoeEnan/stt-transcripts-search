@@ -8,25 +8,27 @@ const Notification = ({ message, type, onClose }) => {
         warning: "border-yellow-500",
         error: "border-red-500",
     };
-  
+
     const progressBarColors = {
         success: "bg-green-500",
         successLight: "bg-green-300",
         warning: "bg-yellow-500",
         error: "bg-red-500",
     };
-  
+
     const duration = 5000; // Duration of notification in milliseconds
     const [remainingTime, setRemainingTime] = useState(duration);
     const intervalRef = useRef(null);
-  
+    const timeoutRef = useRef(null);
+
     const startTimer = () => {
+        clearInterval(intervalRef.current);
         intervalRef.current = setInterval(() => {
             setRemainingTime((time) => {
                 if (time <= 100) {
                     clearInterval(intervalRef.current);
                     // Use setTimeout to ensure onClose is called after the current render cycle
-                    setTimeout(() => onClose(), 0);
+                    timeoutRef.current = setTimeout(() => onClose(), 0);
                     return 0;
                 }
                 return time - 100;
@@ -36,19 +38,22 @@ const Notification = ({ message, type, onClose }) => {
 
     useEffect(() => {
         startTimer();
-        return () => clearInterval(intervalRef.current);
-    }, [onClose]);
+        return () => {
+            clearInterval(intervalRef.current);
+            clearTimeout(timeoutRef.current);
+        };
+    }, []);  // Removed onClose from dependencies to avoid unnecessary resets
 
     const handleMouseEnter = () => {
         clearInterval(intervalRef.current);
         setRemainingTime(duration); // Reset timer
     };
-  
+
     const handleMouseLeave = () => {
         clearInterval(intervalRef.current);
         startTimer(); // Restart timer
     };
-  
+
     const progressPercentage = (remainingTime / duration) * 100;
 
     return (
@@ -61,8 +66,8 @@ const Notification = ({ message, type, onClose }) => {
             exit={{ opacity: 0, transform: 'translateY(-20px)' }}
             transition={{ duration: 0.2 }}
         >
-            <button 
-                onClick={onClose} 
+            <button
+                onClick={onClose}
                 className={`absolute top-1 right-1 text-xl text-gray-300 hover:text-white transition-colors`}
             >
                 &times;
