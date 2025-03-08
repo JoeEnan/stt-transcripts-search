@@ -118,16 +118,20 @@ const FileUpload = () => {
             </motion.div>
             <h2 className="text-3xl font-bold mb-2 text-left">File Upload</h2>
             <input
+                id="file-input"
                 type="file"
                 multiple
                 onChange={handleFileSelect}
                 className="hidden"
                 ref={fileInputRef}
             />
-            <label className="border border-gray-600 rounded p-2 w-full mb-2 flex justify-between items-center cursor-pointer bg-gray-700 hover:bg-gray-600 transition-colors"
-                onClick={() => fileInputRef.current.click()}
+            <label
+                htmlFor="file-input"
+                className="border border-gray-600 rounded p-2 w-full mb-2 flex justify-between items-center cursor-pointer bg-gray-700 hover:bg-gray-600 transition-colors"
             >
-                <span className="text-white">{files.length ? `${files.length} file(s) selected` : 'Choose files'}</span>
+                <span className="text-white">
+                    {files.length ? `${files.length} file(s) selected` : 'Choose files'}
+                </span>
                 <span className="text-gray-500">{files.length ? '✓' : ''}</span>
             </label>
             <ul className="list-disc pl-5 mb-2 text-white">
