@@ -1,0 +1,12 @@
+FROM node:18-alpine
+WORKDIR /app
+
+# Install npm dependencies (including test frameworks like jest)
+COPY package*.json ./
+RUN npm ci
+
+# Copy the rest of the source files required for testing
+COPY . .
+
+# Default command to run the tests (jest as defined in package.json)
+CMD ["npm", "run", "test"]

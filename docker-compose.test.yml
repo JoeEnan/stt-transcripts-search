@@ -1,0 +1,20 @@
+services:
+  backend_test:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.test
+    environment:
+      - AUDIO_STORAGE_PATH=audio_storage
+    volumes:
+      - data_test:/app/data
+
+  frontend_test:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.test
+    environment:
+      - NODE_ENV=test
+      - JEST_SILENT=true  # Set this to 'true' to silence Jest output
+
+volumes:
+  data_test:

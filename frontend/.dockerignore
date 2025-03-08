@@ -20,13 +20,6 @@ yarn.lock
 .vscode
 .idea
 
-# Ignore testing artifacts
-coverage
-*.test.js
-*.spec.js
-*.test.jsx
-*.spec.jsx
-
 # Ignore operating system files
 .DS_Store
 Thumbs.db
