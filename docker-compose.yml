@@ -25,7 +25,7 @@ services:
       context: ./frontend
     ports:
       - "3000:80"
-    # Ensure backend service is available before starting frontend
+    # Ensure backend service is available and healthy! before starting frontend
     depends_on:
       backend:
         condition: service_healthy
