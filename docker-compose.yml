@@ -13,6 +13,12 @@ services:
       - audio_storage:/app/audio_storage
     networks:
       - app-network
+    healthcheck:
+      # Credits: https://github.com/dart-lang/dart-docker/issues/58#issuecomment-1086975460
+      test: timeout 10s bash -c ':> /dev/tcp/127.0.0.1/9090' || exit 1
+      interval: 5s
+      timeout: 2s
+      retries: 3
 
   frontend:
     build:
@@ -21,7 +27,8 @@ services:
       - "3000:80"
     # Ensure backend service is available before starting frontend
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     networks:
       - app-network
 
