@@ -1,5 +1,5 @@
 import os
-from datetime import UTC, datetime
+from datetime import datetime
 
 from sqlalchemy import Column, DateTime, Integer, String, Text, create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker

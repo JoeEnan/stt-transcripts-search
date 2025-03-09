@@ -4,9 +4,7 @@ LOGGING_CONFIG = {
     "version": 1,
     "disable_existing_loggers": False,
     "formatters": {
-        "standard": {
-            "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-        },
+        "standard": {"format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s"},
     },
     "handlers": {
         "console": {
@@ -16,12 +14,8 @@ LOGGING_CONFIG = {
         },
     },
     "loggers": {
-        "": {
-            "handlers": ["console"],
-            "level": logging.DEBUG,
-            "propagate": True
-        },
-    }
+        "": {"handlers": ["console"], "level": logging.DEBUG, "propagate": True},
+    },
 }
 
 logging.config.dictConfig(LOGGING_CONFIG)

@@ -60,9 +60,14 @@ def db_session(test_engine):
 # Dummy Test Helpers
 # -------------------------------
 def dummy_model():
+    """
+    Create a dummy transcription model for testing purposes.
+    """
+
     class Dummy:
         def transcribe(self, file_path: str):  # noqa: ARG002 Keep the signature for compatibility with the real model.
             return {"text": "dummy transcribed text"}
+
     return Dummy()
 
 
