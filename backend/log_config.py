@@ -1,4 +1,7 @@
+import logging
 import logging.config
+
+from config import settings  # Import the settings
 
 LOGGING_CONFIG = {
     "version": 1,
@@ -10,14 +13,17 @@ LOGGING_CONFIG = {
         "console": {
             "class": "logging.StreamHandler",
             "formatter": "standard",
-            "level": logging.DEBUG,
+            "level": settings.LOG_LEVEL,
         },
     },
     "loggers": {
-        "": {"handlers": ["console"], "level": logging.DEBUG, "propagate": True},
+        "": {
+            "handlers": ["console"],
+            "level": settings.LOG_LEVEL,
+            "propagate": True,
+        },
     },
 }
 
 logging.config.dictConfig(LOGGING_CONFIG)
-
 logger = logging.getLogger(__name__)
