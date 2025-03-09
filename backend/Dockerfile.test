@@ -26,6 +26,7 @@ COPY --from=builder --chown=app:app /app /app
 # Make sure the virtualenv's bin is available in PATH
 ENV PATH="/app/.venv/bin:$PATH"
 ENV TESTING=1
+ENV DATABASE_URL="sqlite:///:memory:"
 WORKDIR /app
 
 # Default command to run tests:

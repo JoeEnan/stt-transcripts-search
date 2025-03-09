@@ -1,10 +1,10 @@
 import asyncio
-import os
 
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+from config import settings
 from database import Base, Transcription
 from utils import db_operations, transcriber
 from utils.websocket_manager import (
@@ -12,9 +12,6 @@ from utils.websocket_manager import (
     clear_websockets,
     remove_websocket,
 )
-
-# Set the environment variable for the in-memory database
-os.environ["DATABASE_URL"] = "sqlite:///:memory:"
 
 
 # -------------------------------
@@ -26,7 +23,7 @@ def test_engine():
     Create the SQLAlchemy engine for an in-memory SQLite database.
     """
     engine = create_engine(
-        os.getenv("DATABASE_URL"),
+        settings.DATABASE_URL,
         connect_args={"check_same_thread": False},
     )
     yield engine

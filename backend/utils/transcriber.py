@@ -7,6 +7,7 @@ from fastapi import BackgroundTasks, Depends
 from fastapi.concurrency import run_in_threadpool
 from sqlalchemy.orm import Session
 
+from config import settings
 from database import get_db
 from log_config import logger
 from utils.db_operations import db_save_transcription
@@ -23,7 +24,7 @@ def get_model():
     if not hasattr(get_model, "model"):
         import whisper  # heavy dependency, only imported when needed
 
-        get_model.model = whisper.load_model("tiny")
+        get_model.model = whisper.load_model(settings.WHISPER_MODEL)
     return get_model.model
 
 
@@ -37,9 +38,7 @@ async def transcribe_files(
 
     for file in files:
         unique_filename = f"{batch_uuid}_{file.filename}"
-        audio_path = os.path.join(
-            os.getenv("AUDIO_STORAGE_PATH", "audio_storage"), unique_filename
-        )
+        audio_path = os.path.join(settings.AUDIO_STORAGE_PATH, unique_filename)
         audio_paths.append(audio_path)
         original_audio_names.append(file.filename)
 

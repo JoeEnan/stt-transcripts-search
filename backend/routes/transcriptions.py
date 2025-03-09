@@ -1,4 +1,3 @@
-import os
 from typing import Annotated
 
 from fastapi import (
@@ -22,9 +21,6 @@ from utils.db_operations import (
 from utils.transcriber import transcribe_files
 
 router = APIRouter(prefix="/api", tags=["transcriptions"])
-
-# Externalize the audio storage path
-AUDIO_STORAGE_PATH = os.getenv("AUDIO_STORAGE_PATH", "audio_storage")
 
 
 @router.post("/transcribe")

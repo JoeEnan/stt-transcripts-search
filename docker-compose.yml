@@ -3,9 +3,9 @@ services:
     build:
       context: ./backend
     environment:
-      # Ensure DATABASE_URL and AUDIO_STORAGE_PATH are set appropriately
       - DATABASE_URL=sqlite:///./data/transcriptions.db
       - AUDIO_STORAGE_PATH=audio_storage
+      - WHISPER_MODEL=tiny
       # Setting Timezone
       - TZ=Asia/Singapore
     volumes:
