@@ -17,7 +17,7 @@ class Transcription(Base):
     audio_filepath = Column(String, index=True)
     original_audio_filename = Column(String, index=True)
     text = Column(Text)
-    created_at = Column(DateTime, default=datetime.now(UTC))
+    created_at = Column(DateTime, default=datetime.now().astimezone())
 
 
 def init_db():
