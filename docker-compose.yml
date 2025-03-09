@@ -1,5 +1,11 @@
 services:
   backend:
+    # Task 2d: Containerization of Backend
+    # Assumptions:
+    # - Timezone is in Singapore.
+    # - Port is not assigned as only frontend container will be accessing the backend.
+    # - The named volumes will be managed by docker, no need to maintain them on host.
+    # - Healthcheck only needs to occur once on startup before exiting    
     build:
       context: ./backend
     environment:
@@ -15,12 +21,17 @@ services:
       - app-network
     healthcheck:
       # Credits: https://github.com/dart-lang/dart-docker/issues/58#issuecomment-1086975460
+      # There are no curl or wget installed on the image, so we use bash to check if the port is open.
       test: timeout 10s bash -c ':> /dev/tcp/127.0.0.1/9090' || exit 1
       interval: 5s
       timeout: 2s
       retries: 3
 
   frontend:
+    # Task 3c: Containerization of Frontend
+    # Assumptions:
+    # - Only start up frontend container only when backend healthcheck is good
+    # - Only frontend can access the backend, so they share the same app-network and we only expose the frontend container.
     build:
       context: ./frontend
     ports:

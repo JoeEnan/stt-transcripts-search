@@ -14,6 +14,12 @@ connected_websockets = {}
 
 @router.websocket("/transcript_ready/{batch_uuid}")
 async def websocket_endpoint(websocket: WebSocket, batch_uuid: str):
+    """
+    Mentioned in Task 2a ii and Task 2b ii: POST /transcribe
+    - Websocket endpoint that accepts a batch uuid
+    - Keeps the websocket alive until all audio files in a batch
+        (can be 1 or many audio files) processing is completed
+    """
     await websocket.accept()
     add_websocket(batch_uuid, websocket)  # Add the new websocket connection
     try:

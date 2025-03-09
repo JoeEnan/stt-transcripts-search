@@ -1,3 +1,16 @@
+/*
+Task 3b i: File upload interface for single / batched audio file transcription
+Assumptions:
+- FileUpload component handles both single or batched audio file uploads
+- Notifications are displayed for each file upload status
+    - For each file that is done processing, backend will respond with "completed"
+    - When a singular audio file's processing is completed, backend will respond with "job_completed"
+    - When a batch of audio files' processing is completed, backend will respond with "batch_completed"
+    - Appropriate Notification will be displayed for each notification from the backend.
+- When the backend responds with either "job_completed" or "batch_completed" status,
+    - search will be cleared
+    - transcription list will be refreshed to get the latest transcriptions
+*/
 import React, { useState, useRef } from 'react';
 import Notification from './Notification';
 import { v4 as uuidv4 } from 'uuid';

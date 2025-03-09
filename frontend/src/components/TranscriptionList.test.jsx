@@ -1,3 +1,21 @@
+/*
+Task 4a: Testing for Frontend TranscriptionList Component
+Test Setup: Mocks global fetch and SVG imports; resets all mocks before each test.
+Tests:
+- renders the component with title: Checks that the TranscriptionList component renders the correct titles.
+
+- fetches and displays transcriptions on initial load: Validates that transcriptions are successfully fetched and displayed.
+
+- handles search functionality: Tests the search feature and fetch calls with a search term.
+
+- handles search with match case and full file name toggles: Verifies the correct search parameters are sent when toggles are used.
+
+- handles clear search functionality: Checks clearing search input and fetching all transcriptions after clearing.
+
+- clears search when clearSearchContent event is dispatched: Tests clearing search input via a dispatched event.
+
+- handles error when fetching transcriptions: Validates error handling and logging during a fetch failure.
+*/
 import React from 'react';
 import { render, screen, fireEvent, act, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
@@ -31,7 +49,7 @@ describe('TranscriptionList', () => {
     beforeEach(() => {
         // Reset all mocks before each test
         jest.clearAllMocks();
-        
+
         // Mock successful fetch response for initial load
         global.fetch.mockResolvedValueOnce({
             ok: true,
@@ -55,7 +73,7 @@ describe('TranscriptionList', () => {
 
         // Check that the fetch was called with the correct URL
         expect(global.fetch).toHaveBeenCalledWith('http://localhost:9090/api/transcriptions');
-        
+
         // Check that the transcriptions are displayed
         await waitFor(() => {
             expect(screen.getByText('test1.m4a')).toBeInTheDocument();
@@ -80,7 +98,7 @@ describe('TranscriptionList', () => {
         // Enter search term
         const searchInput = screen.getByPlaceholderText('Search by audio file name');
         fireEvent.change(searchInput, { target: { value: 'test1' } });
-        
+
         // Click search button
         const searchButton = screen.getByText('Search');
         await act(async () => {
@@ -91,7 +109,7 @@ describe('TranscriptionList', () => {
         expect(global.fetch).toHaveBeenCalledWith(
             'http://localhost:9090/api/search?file_name=test1&match_full_file_name=false&match_case=false'
         );
-        
+
         // Verify the search results
         await waitFor(() => {
             expect(screen.getByText('test1.m4a')).toBeInTheDocument();
@@ -114,14 +132,14 @@ describe('TranscriptionList', () => {
         // Enter search term
         const searchInput = screen.getByPlaceholderText('Search by audio file name');
         fireEvent.change(searchInput, { target: { value: 'test1' } });
-        
+
         // Toggle match case and full file name
         const matchCaseImg = screen.getByAltText('Match Case');
         const fullFileNameImg = screen.getByAltText('Match Full File Name');
-        
+
         fireEvent.click(matchCaseImg);
         fireEvent.click(fullFileNameImg);
-        
+
         // Press Enter to search
         await act(async () => {
             fireEvent.keyDown(searchInput, { key: 'Enter', code: 'Enter' });
@@ -142,17 +160,17 @@ describe('TranscriptionList', () => {
         // Enter search term
         const searchInput = screen.getByPlaceholderText('Search by audio file name');
         fireEvent.change(searchInput, { target: { value: 'test1' } });
-        
+
         // Toggle match case and full file name
         const matchCaseImg = screen.getByAltText('Match Case');
         const fullFileNameImg = screen.getByAltText('Match Full File Name');
-        
+
         fireEvent.click(matchCaseImg);
         fireEvent.click(fullFileNameImg);
-        
+
         // Clear fetch mock to track new calls
         global.fetch.mockClear();
-        
+
         // Mock the response for fetchTranscriptions after clear
         global.fetch.mockResolvedValueOnce({
             ok: true,
@@ -167,7 +185,7 @@ describe('TranscriptionList', () => {
 
         // Check that the input was cleared
         expect(searchInput.value).toBe('');
-        
+
         // Check that fetchTranscriptions was called
         expect(global.fetch).toHaveBeenCalledWith('http://localhost:9090/api/transcriptions');
     });
@@ -181,10 +199,10 @@ describe('TranscriptionList', () => {
         // Enter search term
         const searchInput = screen.getByPlaceholderText('Search by audio file name');
         fireEvent.change(searchInput, { target: { value: 'test1' } });
-        
+
         // Clear fetch mock to track new calls
         global.fetch.mockClear();
-        
+
         // Mock the response for fetchTranscriptions after clear
         global.fetch.mockResolvedValueOnce({
             ok: true,
@@ -198,7 +216,7 @@ describe('TranscriptionList', () => {
 
         // Check that the input was cleared
         expect(searchInput.value).toBe('');
-        
+
         // Check that fetchTranscriptions was called
         expect(global.fetch).toHaveBeenCalledWith('http://localhost:9090/api/transcriptions');
     });
@@ -210,7 +228,7 @@ describe('TranscriptionList', () => {
 
         // Clear previous mocks
         global.fetch.mockReset();
-        
+
         // Mock a failed fetch
         global.fetch.mockRejectedValueOnce(new Error('Network error'));
 
@@ -220,7 +238,7 @@ describe('TranscriptionList', () => {
 
         // Check that console.error was called
         expect(console.error).toHaveBeenCalled();
-        
+
         // Restore console.error
         console.error = originalConsoleError;
     });

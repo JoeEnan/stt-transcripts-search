@@ -1,3 +1,17 @@
+/*
+Task 4a: Testing for Frontend Notification Component
+Test Setup: Uses fake timers for notifications; performs cleanup after each test.
+Tests:
+- renders the notification with the provided message: Ensures the Notification displays the correct title and text.
+
+- calls onClose after 5 seconds: Verifies that the onClose function is called after a 5-second delay.
+
+- pauses and resets timer on mouse enter and resumes on mouse leave: 
+    - Tests timer behavior when the mouse enters and leaves the Notification.
+
+- calls onClose when the close button is clicked: Confirms that clicking the close button triggers the onClose callback.
+
+*/
 import React from 'react';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import Notification from './Notification';
@@ -45,11 +59,11 @@ describe('Notification', () => {
 
     test('pauses and resets timer on mouse enter and resumes on mouse leave', () => {
         const onClose = jest.fn();
-        
+
         act(() => {
             render(<Notification message={message} type="success" onClose={onClose} />);
         });
-        
+
         const notification = screen.getByText(message.title).closest('div');
 
         // Advance slightly to let initial timers start
@@ -61,29 +75,29 @@ describe('Notification', () => {
         act(() => {
             fireEvent.mouseEnter(notification);
         });
-        
+
         // Advance a considerable time to ensure timer is actually paused
         act(() => {
             jest.advanceTimersByTime(3000);
         });
-        
+
         expect(onClose).not.toHaveBeenCalled();
 
         // Resume timer with mouse leave
         act(() => {
             fireEvent.mouseLeave(notification);
         });
-        
+
         // Advance time to trigger the completion (full 5000ms)
         act(() => {
             jest.advanceTimersByTime(5000);
         });
-        
+
         // Ensure any remaining timers are processed
         act(() => {
             jest.runOnlyPendingTimers();
         });
-        
+
         expect(onClose).toHaveBeenCalledTimes(1);
     });
 

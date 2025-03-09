@@ -11,6 +11,11 @@ const TranscriptionList = () => {
 
     // Function to fetch all transcriptions
     const fetchTranscriptions = async () => {
+        /*
+        Task 3b ii: Display a list of all transcriptions from the database.
+        Assumptions:
+        - Simply fetches the list of all transcriptions and display them
+        */
         try {
             const response = await fetch(`${config.apiBaseUrl}/transcriptions`);
             const data = await response.json();
@@ -22,6 +27,11 @@ const TranscriptionList = () => {
 
     // Function to search transcriptions with additional query parameters
     const searchTranscriptions = async (term) => {
+        /*
+        Task 3b iii: Implement search functionality to search for and display transcriptions based on the audio file name..
+        Assumptions:
+        - allow for matching full file name and/or case sensitivity matches
+        */
         if (!term) {
             fetchTranscriptions();
             return;

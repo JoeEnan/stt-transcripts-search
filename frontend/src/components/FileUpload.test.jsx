@@ -1,3 +1,23 @@
+/*
+Task 4a: Testing for Frontend FileUpload Component
+Test Setup: Mocks global fetch and WebSocket, as well as UUID generation and the Notification component.
+Tests:
+- renders the component with upload button: Verifies the FileUpload component displays upload-related texts.
+
+- allows selecting files: Confirms that selected files update the display and count in the UI.
+
+- allows removing selected files: Tests file removal functionality and checks the updated UI.
+
+- displays error notification when trying to upload with no files: Ensures an error notification appears if no files are uploaded.
+
+- uploads files successfully: Mocks a successful file upload and checks for notification and fetch calls.
+
+- handles upload errors: Simulates a failed upload response and verifies the correct error notification.
+
+- handles WebSocket messages: Tests the handling of WebSocket messages and related notifications.
+
+- closes notification when clicked: Confirms notifications close correctly when clicked.
+*/
 import React from 'react';
 import { render, screen, fireEvent, act, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
@@ -232,28 +252,28 @@ describe('FileUpload', () => {
     test('handles WebSocket messages', async () => {
         // Render the component
         render(<FileUpload />);
-    
+
         // Select and upload a file to initialize WebSocket
         const fileInput = screen.getByLabelText('Choose files');
         const file = new File(['content'], 'test.m4a', { type: 'audio/m4a' });
-    
+
         await act(async () => {
             fireEvent.change(fileInput, { target: { files: [file] } });
         });
-    
+
         // Mock successful upload response
         global.fetch.mockResolvedValueOnce({
             ok: true,
             json: async () => ({ batch_uuid: 'test-batch-uuid' })
         });
-    
+
         await act(async () => {
             fireEvent.click(screen.getByText('Upload'));
         });
-    
+
         // Get the WebSocket instance that was created
         const wsInstance = global.WebSocket.mock.results[0].value;
-    
+
         // Simulate WebSocket messages by directly calling the callback
         await act(async () => {
             // Simulate a message event for batch_completed
@@ -261,15 +281,15 @@ describe('FileUpload', () => {
                 data: JSON.stringify({ status: 'batch_completed' })
             });
         });
-    
+
         // Check that events were dispatched
-        expect(window.dispatchEvent).toHaveBeenCalledWith(expect.objectContaining({ 
-            type: 'clearSearchContent' 
+        expect(window.dispatchEvent).toHaveBeenCalledWith(expect.objectContaining({
+            type: 'clearSearchContent'
         }));
-        expect(window.dispatchEvent).toHaveBeenCalledWith(expect.objectContaining({ 
-            type: 'refreshTranscriptions' 
+        expect(window.dispatchEvent).toHaveBeenCalledWith(expect.objectContaining({
+            type: 'refreshTranscriptions'
         }));
-    
+
         // Check for notification
         await waitFor(() => {
             const notificationTitles = screen.getAllByTestId('notification-title');
@@ -278,28 +298,28 @@ describe('FileUpload', () => {
             );
             expect(batchCompleteTitle).toBeTruthy();
         });
-    
+
         // Test job_completed message
         await act(async () => {
             wsInstance.onmessage?.({
                 data: JSON.stringify({ status: 'job_completed' })
             });
         });
-    
+
         // Test completed message
         await act(async () => {
             wsInstance.onmessage?.({
                 data: JSON.stringify({ status: 'completed', file: 'test.m4a' })
             });
         });
-    
+
         // Test error message
         await act(async () => {
             wsInstance.onmessage?.({
                 data: JSON.stringify({ status: 'error', file: 'test.m4a' })
             });
         });
-    
+
         // Check for notifications
         expect(screen.getAllByTestId('notification-title').length).toBeGreaterThanOrEqual(4);
     });

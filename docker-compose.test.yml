@@ -1,3 +1,8 @@
+# Task 4a: docker-compose.yml file to run tests for both backend and frontend
+# Assumptions:
+# - To keep the backend container small, whisper model is mocked in unit tests.
+# - Docker containers are used for testing as it is assumed that reviewer have a docker setup to run the production code.
+#   - This will avoid verbose Windows PowerShell or Linux bash scripts to setup the environment for testing.
 services:
   backend_test:
     build:

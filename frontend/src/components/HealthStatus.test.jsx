@@ -1,3 +1,13 @@
+/*
+Task 4a: Testing for Frontend HealthStatus Component
+Test Setup: Uses fake timers to control interval behavior for health checks; cleans up after each test.
+Tests:
+- displays healthy status when API returns OK: 
+    - Mocks a successful API response and checks for healthy status in the UI.
+
+- displays unhealthy status when API does not return OK or fetch fails: 
+    - Validates that the UI updates correctly for both a failed API response and a fetch error.
+*/
 import React from 'react';
 import { render, screen, waitFor, cleanup } from '@testing-library/react';
 import HealthStatus from './HealthStatus';

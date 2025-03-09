@@ -13,6 +13,27 @@ from utils.websocket_manager import (
     remove_websocket,
 )
 
+"""
+Task 4a: Testing for Backend
+- Database Setup and Teardown
+    - Creates an in-memory SQLite engine for isolated testing.
+    - Sets up and tears down the database schema before and after tests.
+
+- Dummy Helpers
+    - Provides a dummy transcription model that returns preset text.
+        - Whisper library is not required for unit test to run, 
+            and makes the testing container extremely bloated.
+    - Implements a DummyWebSocket to track messages during tests.
+
+- Transcription Tests (transcriber.py)
+    - Tests that the transcription function returns expected text using a mocked model.
+    - Validates the asynchronous batch processing of audio files and tracks websocket messages.
+
+- Database Operation Tests (db_operations.py)
+    - Confirms that transcription records can be saved and retrieved correctly.
+    - Tests search functionality for partial and full filename matches, including case sensitivity.
+"""
+
 
 # -------------------------------
 # Fixtures for in-memory database

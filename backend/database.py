@@ -11,6 +11,15 @@ Base = declarative_base()
 
 
 class Transcription(Base):
+    """
+    Task 2c i: Use SQLite as the primary database for storing the audio file name,
+        transribed text and created timestamp..
+    Assumptions:
+        - audio file path will be made unique with batch_uuid that is generated per upload
+        - original audio file name that is uploaded by the user will be preserved
+            - This will then be displayed and used for search.
+    """
+
     __tablename__ = "transcriptions"
     id = Column(Integer, primary_key=True, index=True)
     audio_filepath = Column(String, index=True)
