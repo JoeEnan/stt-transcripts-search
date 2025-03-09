@@ -3,17 +3,28 @@ import os
 import uuid
 
 import aiofiles
-import whisper
 from fastapi import BackgroundTasks, Depends
 from fastapi.concurrency import run_in_threadpool
 from sqlalchemy.orm import Session
 
 from database import get_db
 from log_config import logger
-from utils.db_operations import db_get_transcriptions, db_save_transcription
+from utils.db_operations import db_save_transcription
 from utils.websocket_manager import get_websockets
 
-model = whisper.load_model("tiny")
+
+def get_model():
+    """
+    Load and return the Whisper model.
+    In production, this function loads the heavy model.
+    In tests, you can monkeypatch this function (or have it return a dummy object)
+    so that the openai-whisper library is not actually imported.
+    """
+    if not hasattr(get_model, "model"):
+        import whisper  # heavy dependency, only imported when needed
+
+        get_model.model = whisper.load_model("tiny")
+    return get_model.model
 
 
 async def transcribe_files(
@@ -39,7 +50,7 @@ async def transcribe_files(
             msg = f"Error writing file {file.filename}: {e}"
             raise Exception(msg) from e
 
-    # Start transcription task
+    # Start transcription task in the background
     background_tasks.add_task(
         run_in_threadpool,
         lambda: asyncio.run(
@@ -58,17 +69,15 @@ async def process_transcription_batch(
     original_audio_names: list[str],
     db: Session = Depends(get_db),
 ):
-    """Transcribe a batch of audio files and save results to database."""
+    """Transcribe a batch of audio files and save results to the database."""
     results = []
     for file_path, original_audio_name in zip(
         file_paths, original_audio_names, strict=False
     ):
         transcribed_text = transcribe_audio(file_path)
         db_save_transcription(file_path, original_audio_name, transcribed_text, db)
-        transcriptions = db_get_transcriptions(db=db)
-        logger.info(f"Content {len(transcriptions)}...")
         results.append({"file": original_audio_name})
-        # Notify relevant WebSocket clients that transcription is done
+        # Notify connected WebSocket clients about the completed transcription
         for websocket in get_websockets(batch_uuid):
             try:
                 await websocket.send_json(
@@ -81,7 +90,7 @@ async def process_transcription_batch(
             except Exception as e:
                 logger.error(f"Failed to send message over WebSocket: {e}")
 
-    # For batch upload, final batch completion message
+    # Send a final completion message after processing all files
     if len(file_paths) > 1:
         for websocket in get_websockets(batch_uuid):
             try:
@@ -97,20 +106,24 @@ async def process_transcription_batch(
                     f"Failed to send final completion message for batch job over WebSocket: {e}"
                 )
     else:
-        try:
-            await websocket.send_json(
-                {
-                    "status": "job_completed",
-                    "results": results,
-                }
-            )
-        except Exception as e:
-            logger.error(
-                f"Failed to send final completion message for single job over WebSocket: {e}"
-            )
+        for websocket in get_websockets(batch_uuid):
+            try:
+                await websocket.send_json(
+                    {"status": "job_completed", "results": results}
+                )
+            except Exception as e:
+                logger.error(
+                    f"Failed to send final completion message for single job over WebSocket: {e}"
+                )
 
 
-def transcribe_audio(file_path: str) -> str:
-    """Transcribe audio using Whisper model."""
-    result = model.transcribe(file_path)
+def transcribe_audio(file_path: str, model_instance: object = None) -> str:
+    """
+    Transcribe audio from the given file path using the provided model.
+    If no model is given, it loads one using get_model().
+    This allows for easy injection of a mock model in tests.
+    """
+    if model_instance is None:
+        model_instance = get_model()
+    result = model_instance.transcribe(file_path)
     return result["text"]

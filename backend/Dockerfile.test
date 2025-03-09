@@ -9,12 +9,12 @@ WORKDIR /app
 RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=uv.lock,target=uv.lock \
     --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
-    uv sync --frozen --no-install-project --all-groups
+    uv sync --frozen --no-install-project --group=dev
 
 # Add project files and ensure all dependencies are installed
 ADD . /app
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --frozen --all-groups
+    uv sync --frozen --group=dev
 
 # Stage 2: Create a run-time image that can execute tests with pytest
 FROM python:3.12-slim-bookworm
@@ -24,6 +24,7 @@ COPY --from=builder --chown=app:app /app /app
 
 # Make sure the virtualenv's bin is available in PATH
 ENV PATH="/app/.venv/bin:$PATH"
+ENV TESTING=1
 WORKDIR /app
 
 # Default command to run tests:

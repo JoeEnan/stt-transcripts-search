@@ -57,19 +57,13 @@ def db_session(test_engine):
 
 
 # -------------------------------
-# Tests for transcriber.py
+# Dummy Test Helpers
 # -------------------------------
-def test_transcribe_audio(monkeypatch):
-    """
-    Verify that transcriber.transcribe_audio returns the expected transcription text
-    when the underlying transcription model is mocked.
-    """
-    # Monkey-patch the transcribe method on the model to return a dummy response.
-    monkeypatch.setattr(
-        transcriber.model, "transcribe", lambda _: {"text": "dummy transcribed text"}
-    )
-    result = transcriber.transcribe_audio("dummy_audio_path.mp3")
-    assert result == "dummy transcribed text"
+def dummy_model():
+    class Dummy:
+        def transcribe(self, file_path: str):  # noqa: ARG002 Keep the signature for compatibility with the real model.
+            return {"text": "dummy transcribed text"}
+    return Dummy()
 
 
 class DummyWebSocket:
@@ -88,6 +82,22 @@ class DummyWebSocket:
         self.closed = True
 
 
+# -------------------------------
+# Tests for transcriber.py
+# -------------------------------
+def test_transcribe_audio(monkeypatch):
+    """
+    Verify that transcriber.transcribe_audio returns the expected transcription text
+    when the underlying transcription model is mocked.
+    """
+    # Monkey-patch get_model to return a dummy model.
+    monkeypatch.setattr("utils.transcriber.get_model", lambda: dummy_model())
+    from utils import transcriber
+
+    result = transcriber.transcribe_audio("dummy_audio_path.mp3")
+    assert result == "dummy transcribed text"
+
+
 @pytest.mark.asyncio
 async def test_process_transcription_batch(db_session, monkeypatch):
     """
@@ -98,10 +108,8 @@ async def test_process_transcription_batch(db_session, monkeypatch):
     """
     clear_websockets()
 
-    # Monkey-patch transcribe_audio to return a fixed string regardless of file.
-    monkeypatch.setattr(
-        transcriber.model, "transcribe", lambda _: {"text": "unit-test transcription"}
-    )
+    # Monkey-patch get_model to return a dummy model that returns a specific string.
+    monkeypatch.setattr("utils.transcriber.get_model", lambda: dummy_model())
 
     # Use dummy websocket for a given batch_uuid.
     batch_uuid = "test_batch"

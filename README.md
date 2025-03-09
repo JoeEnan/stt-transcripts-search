@@ -1,7 +1,7 @@
 # How to Run Unit Tests
 To run the unit tests for both backend and frontend, use the following command:
 ```shell
-docker compose -f docker-compose.test.yml up --build --abort-on-container-exit --remove-orphans --force-recreate
+docker compose -f docker-compose.test.yml up --build --remove-orphans --force-recreate
 ```
 
 To follow the logs of the backend or frontend services during testing, use the following commands:

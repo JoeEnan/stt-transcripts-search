@@ -1,4 +1,3 @@
-import logging
 import os
 from typing import Annotated
 
@@ -15,6 +14,7 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
 from database import get_db
+from log_config import logger
 from utils.db_operations import (
     db_get_transcriptions,
     db_search_transcriptions,
@@ -25,10 +25,6 @@ router = APIRouter(prefix="/api", tags=["transcriptions"])
 
 # Externalize the audio storage path
 AUDIO_STORAGE_PATH = os.getenv("AUDIO_STORAGE_PATH", "audio_storage")
-
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 
 @router.post("/transcribe")
