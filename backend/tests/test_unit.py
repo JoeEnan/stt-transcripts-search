@@ -21,7 +21,7 @@ Task 4a: Testing for Backend
 
 - Dummy Helpers
     - Provides a dummy transcription model that returns preset text.
-        - Whisper library is not required for unit test to run, 
+        - Whisper library is not required for unit test to run,
             and makes the testing container extremely bloated.
     - Implements a DummyWebSocket to track messages during tests.
 
@@ -131,7 +131,7 @@ async def test_process_transcription_batch(db_session, monkeypatch):
     """
     clear_websockets()
 
-    # Monkey-patch get_model to return a dummy model that returns a specific string.
+    # Monkey-patch get_model to return a dummy model.
     monkeypatch.setattr("utils.transcriber.get_model", lambda: dummy_model())
 
     # Use dummy websocket for a given batch_uuid.

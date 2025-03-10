@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import config from '../config';
 
 const Notification = ({ message, type, onClose }) => {
     const accentColors = {
@@ -43,7 +42,7 @@ const Notification = ({ message, type, onClose }) => {
             clearInterval(intervalRef.current);
             clearTimeout(timeoutRef.current);
         };
-    }, []);  // Removed onClose from dependencies to avoid unnecessary resets
+    }, []);
 
     const handleMouseEnter = () => {
         clearInterval(intervalRef.current);

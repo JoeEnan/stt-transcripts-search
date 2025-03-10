@@ -122,7 +122,7 @@ def get_model():
     """
     Load and return the Whisper model.
     In production, this function loads the heavy model.
-    In tests, you can monkeypatch this function (or have it return a dummy object)
+    In tests, monkeypatch this function (or have it return a dummy object)
     so that the openai-whisper library is not actually imported.
     """
     if not hasattr(get_model, "model"):
