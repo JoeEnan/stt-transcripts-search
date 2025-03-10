@@ -16,6 +16,7 @@
      docker compose version
      ```
      - **IMPORTANT**: Ensure that Docker Compose is version 2 or higher.
+  - **For Docker Desktop Users**: Please ensure that Docker Engine is running before proceeding
 
 ## Running the Project
 
@@ -45,6 +46,8 @@
 
 4. **Access the Webpage**
    - Once Docker Compose has finished building both containers, go to [http://localhost:3000](http://localhost:3000) to access the webpage.
+   - Once audio file upload request has been sent, allow the application some time to download the model.
+      - The notification that the audio file is processed will come shortly
 
 # Running Frontend and Backend Unit Tests with Docker Compose
 
