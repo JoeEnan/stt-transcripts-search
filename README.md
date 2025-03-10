@@ -15,7 +15,7 @@
      ```bash
      docker compose version
      ```
-     - Ensure that docker compose is at least v2
+     - **IMPORTANT**: Ensure that Docker Compose is version 2 or higher.
 
 ## Running the Project
 
@@ -36,28 +36,54 @@
    - To follow the logs of the backend or frontend services during testing, use the following commands in separate terminals:
    - For backend logs:
      ```bash
-     docker compose logs -f backend_test
+     docker compose logs -f backend
      ```
    - For frontend logs:
      ```bash
-     docker compose logs -f frontend_test
+     docker compose logs -f frontend
      ```
 
-4. **Access the webpage**
-   - To access the webpage, go to http://localhost:3000 after the build completes.
+4. **Access the Webpage**
+   - Once Docker Compose has finished building both containers, go to [http://localhost:3000](http://localhost:3000) to access the webpage.
 
-# How to Run Frontend and Backend Unit Tests with Docker Compose
-To run the unit tests for both backend and frontend, use the following command:
-```shell
+# Running Frontend and Backend Unit Tests with Docker Compose
+
+To run the unit tests for both the backend and frontend, use the following command:
+```bash
 docker compose -f docker-compose.test.yml up --build --remove-orphans --force-recreate
 ```
 
+Based on the information from the `README.md` and other provided files, here’s how you can answer a question about where readers can find the test files:
+
+---
+
+## Where to Find Test Files
+
+In the project, you can find the test files located in the `backend/tests` and `frontend/src/components` directories. 
+
+### Backend Tests
+- **Test files for backend functionalities are located in:**
+  - `backend/tests/test_unit.py`
+  - This file contains unit tests for database operations, transcription functionalities, and other backend-related tests.
+
+### Frontend Tests
+- **Test files for frontend components are found in:**
+  - `frontend/src/components/FileUpload.test.jsx` - Unit Tests for the FileUpload component.
+  - `frontend/src/components/HealthStatus.test.jsx` - Unit Tests for the HealthStatus component.
+  - `frontend/src/components/Notification.test.jsx` - Unit Tests for the Notification component.
+  - `frontend/src/components/TranscriptionList.test.jsx` - Unit Tests for the TranscriptionList component.
+
 To follow the logs of the backend or frontend services during testing, use the following commands:
-- `docker compose -f docker-compose.test.yml logs -f backend_test`
-- `docker compose -f docker-compose.test.yml logs -f frontend_test`
+- For backend logs:
+  ```bash
+  docker compose -f docker-compose.test.yml logs -f backend_test
+  ```
+- For frontend logs:
+  ```bash
+  docker compose -f docker-compose.test.yml logs -f frontend_test
+  ```
 
-
-All tests from should pass. Current build output shows:
+All tests should pass. The current build output shows:
 ```shell
 backend_test-1   | ============================= test session starts ==============================
 backend_test-1   | platform linux -- Python 3.12.9, pytest-8.3.5, pluggy-1.5.0
@@ -81,20 +107,19 @@ frontend_test-1  | Tests:       21 passed, 21 total
 frontend_test-1  | Snapshots:   0 total
 frontend_test-1  | Time:        1.862 s
 frontend_test-1 exited with code 0
-
 ```
 
-## Note: Verbosity on Frontend Tests
-In the `docker-compose.test.yml` file, there is an environment variable `JEST_SILENT`. This variable controls whether Jest output should be silenced during tests. If you want to see the Jest output, set this variable to `false`.
+## Note on Verbosity for Frontend Tests
+In the `docker-compose.test.yml` file, there is an environment variable named `JEST_SILENT`. This variable controls whether Jest output is silenced during tests. If you want to see the Jest output, set this variable to `false`.
 
-# How to Run the Project Locally
+# Running the Project Locally
 
 ## Prerequisites
 Ensure you have the following software installed on your machine:
 
 - **Python** (3.12 or above)
 - **Node.js** (version 18.x or above)
-- **uv** (a fast Python package manager and project manager written in Rust)
+- **uv** (a fast Python package and project manager written in Rust)
 
 ## Installing UV
 You can install `uv` using the following command:
@@ -122,17 +147,17 @@ npm install
 To run the project locally, follow these steps:
 
 1. **Backend**:
-- Navigate to the backend directory.
-- Run the following command to start the backend server:
+   - Navigate to the backend directory.
+   - Run the following command to start the backend server:
 
-```shell
-uv run main.py
-```
+   ```shell
+   uv run main.py
+   ```
 
 2. **Frontend**:
-- Navigate to the frontend directory.
-- Run the following command to start the frontend development server:
+   - Navigate to the frontend directory.
+   - Run the following command to start the frontend development server:
 
-```shell
-npm run dev
-```
+   ```shell
+   npm run dev
+   ```
