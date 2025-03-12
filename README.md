@@ -56,10 +56,6 @@ To run the unit tests for both the backend and frontend, use the following comma
 docker compose -f docker-compose.test.yml up --build --remove-orphans --force-recreate
 ```
 
-Based on the information from the `README.md` and other provided files, here’s how you can answer a question about where readers can find the test files:
-
----
-
 ## Where to Find Test Files
 
 In the project, you can find the test files located in the `backend/tests` and `frontend/src/components` directories. 
